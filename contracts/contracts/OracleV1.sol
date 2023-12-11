@@ -15,13 +15,13 @@ contract OracleV1 is
     bytes32 public constant REPORTER_ROLE = keccak256("REPORTER_ROLE");
 
     struct TokenData {
-        uint256 value;
-        uint64 updatedAt;
+        uint128 value;
+        uint128 updatedAt;
     }
 
     mapping(bytes32 => TokenData) tokenOracles;
 
-    event ValueUpdate(bytes32 id, uint256 value, uint64 updatedAt);
+    event ValueUpdate(bytes32 id, uint128 value, uint128 updatedAt);
 
     constructor() {
         _disableInitializers();
@@ -38,8 +38,8 @@ contract OracleV1 is
 
     function updateValue(
         bytes32 id,
-        uint256 newValue,
-        uint64 newTimestamp
+        uint128 newValue,
+        uint128 newTimestamp
     ) public onlyRole(REPORTER_ROLE) {
         tokenOracles[id] = TokenData(newValue, newTimestamp);
         emit ValueUpdate(id, newValue, newTimestamp);
@@ -47,7 +47,7 @@ contract OracleV1 is
 
     function getLatestValue(
         bytes32 id
-    ) public view returns (uint256 value, uint64 updatedAt) {
+    ) public view returns (uint128 value, uint128 updatedAt) {
         require(tokenOracles[id].updatedAt > 0, "invalid id");
         return (tokenOracles[id].value, tokenOracles[id].updatedAt);
     }
