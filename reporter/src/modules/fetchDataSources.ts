@@ -24,7 +24,7 @@ export default async function fetchDataSources(config: FeedConfig): Promise<bigi
     const averageWithoutOutliers = filteredValues.reduce((a, b) => a + b, 0) / filteredValues.length;
     process.env.NODE_ENV !== 'test' && console.log('__fetched', averageWithoutOutliers, 'as average value')
 
-    return ethers.parseUnits(String(averageWithoutOutliers), 18)
+    return ethers.parseUnits(String(averageWithoutOutliers.toFixed(18)), 18)
 }
 
 export async function fetchDataSource({ url, path }: { url: string, path: string }): Promise<number> {
