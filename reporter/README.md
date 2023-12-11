@@ -6,9 +6,9 @@ The reporter is a [serverless worker hosted on Cloudflare](https://developers.cl
 
 Each data feed has a corresponding [Cloudflare Durable Object](https://developers.cloudflare.com/durable-objects/). The `interval` setting determines how often (in seconds) the data from the `sources` is refreshed.
 
-Configuration access is protectd with an API-Key.
+Configuration access is protected with an API-Key.
 
-Each source should provide a JSON output. The numerical value is retrieved from a specified `path` in the source's output.
+Each source is required to provide a JSON output. The numerical value is retrieved from a specified `path` in the source's output.
 
 ## Local Development
 
