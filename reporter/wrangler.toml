@@ -1,0 +1,18 @@
+name = "reporter"
+main = "src/index.ts"
+compatibility_date = "2023-05-18"
+
+[durable_objects]
+bindings = [
+  { name = "ValueReporter", class_name = "ValueReporter" },
+]
+ 
+[[migrations]]
+tag = "v2"
+deleted_classes = ["TokenReporter"]
+new_classes = ["ValueReporter"]
+
+[vars]
+# PRIVATE_KEY = "0x…"
+# VEN_API_KEY = "…"
+# API_KEY = "…"
