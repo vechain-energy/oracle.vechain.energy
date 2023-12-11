@@ -13,9 +13,10 @@ export default async function isUpdateRequired(config: FeedConfig, newValue: big
                 clauses: [
                     {
                         to: config.contract.address,
-                        data: OracleV1.encodeFunctionData("getLatestValue", [
-                            ethers.encodeBytes32String(config.id),
-                        ]),
+                        data: OracleV1.encodeFunctionData(
+                            "getLatestValue",
+                            [ethers.encodeBytes32String(config.id)]
+                        ),
                     },
                 ],
             }),
@@ -37,6 +38,7 @@ export default async function isUpdateRequired(config: FeedConfig, newValue: big
     // verify age
     const now = Math.floor(Date.now() / 1000)
     const age = now - Number(updatedAt)
+    process.env.NODE_ENV !== 'test' && console.log('age', age, 'heartbeat', config.heartbeat)
     if (age >= config.heartbeat) { return true }
 
 
@@ -44,6 +46,7 @@ export default async function isUpdateRequired(config: FeedConfig, newValue: big
     const diff = newValue - value
     const onePoint = value / 10000n
     const deviationPoints = onePoint > 0 ? Math.abs(Number(diff / onePoint)) : 0
+    process.env.NODE_ENV !== 'test' && console.log('deviation', deviationPoints, '/', config.deviationPoints)
     if (deviationPoints >= config.deviationPoints) { return true }
 
 

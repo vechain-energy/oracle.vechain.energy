@@ -82,7 +82,6 @@ export class ValueReporter {
   }
 
   async alarm() {
-    console.log('alarm')
     try {
       await this.runReport()
     }
