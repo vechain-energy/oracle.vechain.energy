@@ -85,6 +85,19 @@ describe('OracleV1', () => {
             await expect(Number(result[0])).toEqual(Number(tokenDataAfter[1]))
             await expect(Number(result[1])).toEqual(Number(tokenDataAfter[2]))
         })
+
+        it('emits ValueUpdate(bytes32 id, uint256 value, uint64 updatedAt)', async() => {
+            const tokenData = [ethers.utils.formatBytes32String("vet-usd"), BigInt(999999999), BigInt(666666)]
+
+            const { contracts, users } = await bootSystem()
+
+            const tx = await (await contracts.oracleV1.connect(users.reporter).updateValue(...tokenData)).wait()
+            const event = tx.events.find(({ event }) => event === 'ValueUpdate')
+
+            await expect(event.args.id).toEqual(tokenData[0])
+            await expect(Number(event.args.value)).toEqual(Number(tokenData[1]))
+            await expect(Number(event.args.updatedAt)).toEqual(Number(tokenData[2]))
+        })
     })
 
 

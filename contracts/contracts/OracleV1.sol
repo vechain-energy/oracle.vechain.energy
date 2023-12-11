@@ -21,7 +21,7 @@ contract OracleV1 is
 
     mapping(bytes32 => TokenData) tokenOracles;
 
-    event TokenUpdated(bytes32 id, uint256 value, uint64 updatedAt);
+    event ValueUpdate(bytes32 id, uint256 value, uint64 updatedAt);
 
     constructor() {
         _disableInitializers();
@@ -42,7 +42,7 @@ contract OracleV1 is
         uint64 newTimestamp
     ) public onlyRole(REPORTER_ROLE) {
         tokenOracles[id] = TokenData(newValue, newTimestamp);
-        emit TokenUpdated(id, newValue, newTimestamp);
+        emit ValueUpdate(id, newValue, newTimestamp);
     }
 
     function getLatestValue(
