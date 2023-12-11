@@ -1,6 +1,10 @@
-# Sample Configuration
+# Oracle / Data Feed for Vechain
 
-Each data feed will have a corresponding [Cloudflare Durable Object](https://developers.cloudflare.com/durable-objects/). The `interval` setting determines how often (in seconds) the data from the `sources` is refreshed.
+## Reporter Details
+
+The reporter is a [serverless worker hosted on Cloudflare](https://developers.cloudflare.com/workers/). It fetches data from a pre-configured list of URLs and then publishes the extracted information to a Smart Contract. This makes the data available on-chain.
+
+Each data feed has a corresponding [Cloudflare Durable Object](https://developers.cloudflare.com/durable-objects/). The `interval` setting determines how often (in seconds) the data from the `sources` is refreshed.
 
 Configuration access is protectd with an API-Key.
 
