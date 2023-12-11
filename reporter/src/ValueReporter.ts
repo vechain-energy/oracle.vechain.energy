@@ -37,18 +37,23 @@ export class ValueReporter {
       }
 
       if (request.method === 'GET') {
-        const config = await this.getFeedConfig()
-        const nextUpdate = await this.storage.getAlarm()
-        const lastReport = await this.storage.get<Report>('lastReport')
-        const status = <Status>{
-          id: config.id,
-          interval: config.interval,
-          heartbeat: config.heartbeat,
-          deviationPoints: config.deviationPoints,
-          nextUpdate,
-          lastReport
+        try {
+          const config = await this.getFeedConfig()
+          const nextUpdate = await this.storage.getAlarm()
+          const lastReport = await this.storage.get<Report>('lastReport')
+          const status = <Status>{
+            id: config.id,
+            interval: config.interval,
+            heartbeat: config.heartbeat,
+            deviationPoints: config.deviationPoints,
+            nextUpdate,
+            lastReport
+          }
+          return jsonResponse(status)
         }
-        return jsonResponse(status)
+        catch {
+          return new Response('Not Found', { status: 404 })
+        }
       }
 
       if (request.method === 'POST') {
