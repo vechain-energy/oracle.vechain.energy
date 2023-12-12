@@ -5,6 +5,16 @@ const publicMethods = ['GET']
 
 export default {
 	async fetch(request: Request, env: Env): Promise<Response> {
+		if (request.method === 'OPTIONS') {
+			return new Response('{}', {
+				headers: {
+					'access-control-allow-methods': 'GET, HEAD, POST, PUT, DELETE, OPTIONS',
+					'access-control-allow-origin': '*',
+					'access-control-allow-headers': '*'
+				}
+			})
+		}
+
 		if (!['POST', 'DELETE', 'PUT', 'GET'].includes(request.method)) {
 			return new Response("Method Not Allowed", { status: 405 })
 		}

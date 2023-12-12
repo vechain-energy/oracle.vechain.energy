@@ -3,13 +3,16 @@ import { z } from 'zod'
 import publishReport from './modules/publishReport';
 import fetchDataSources from './modules/fetchDataSources';
 import isUpdateRequired from './modules/isUpdateRequired'
+import { ethers } from 'ethers';
 
 const StatusSchema = z.object({
   interval: z.number(),
   heartbeat: z.number(),
   deviationPoints: z.number(),
   nextUpdate: z.number().nullable(),
-  lastReport: ReportSchema.optional(),
+  latestValue: ReportSchema.extend({
+    formattedValue: z.string(),
+  }).optional(),
 });
 
 type Status = z.infer<typeof StatusSchema>;
@@ -33,26 +36,31 @@ export class ValueReporter {
 
       if (request.method === 'DELETE') {
         await this.storage.deleteAll()
-        return jsonResponse({ deleted: true })
+        return jsonResponse({ success: true })
       }
 
       if (request.method === 'GET') {
         try {
           const config = await this.getFeedConfig()
           const nextUpdate = await this.storage.getAlarm()
-          const lastReport = await this.storage.get<Report>('lastReport')
+          const latestValue = await this.storage.get<Report>('latestValue')
           const status = <Status>{
             id: config.id,
             interval: config.interval,
             heartbeat: config.heartbeat,
             deviationPoints: config.deviationPoints,
             nextUpdate,
-            lastReport
+            latestValue: latestValue
+              ? {
+                ...latestValue,
+                formattedValue: ethers.formatUnits(latestValue.value, 12)
+              }
+              : undefined
           }
           return jsonResponse(status)
         }
         catch {
-          return new Response('Not Found', { status: 404 })
+          return jsonResponse({ error: 'feed not found' }, 404)
         }
       }
 
@@ -67,17 +75,17 @@ export class ValueReporter {
 
         await this.alarm()
 
-        return jsonResponse({ id: this.config.id })
+        return jsonResponse({ success: true, id: this.config.id })
       }
 
     }
     catch (err) {
       if (err instanceof z.ZodError) {
         console.log(err.issues)
-        return new Response(err.message, { status: 500 })
+        return jsonResponse({ success: false, message: err.message }, 500)
       }
       console.log(err)
-      return new Response('Internal Error', { status: 500 })
+      return jsonResponse({ success: false, message: 'Internal Error' }, 500)
     }
   }
 
@@ -105,7 +113,7 @@ export class ValueReporter {
       value: newValue,
       updatedAt: Math.floor(Date.now() / 1000)
     }
-    await this.storage.put('lastReport', report)
+    await this.storage.put('latestValue', report)
     console.log(config.id, 'last value:', report.value, 'updatedAt', report.updatedAt)
 
     const shouldUpdate = await isUpdateRequired(config, newValue)
@@ -145,7 +153,7 @@ export class ValueReporter {
 }
 
 
-function jsonResponse(body: any): Response {
+function jsonResponse(body: any, statusCode = 200): Response {
   return new Response(
     JSON.stringify(
       body, (_, value) =>
@@ -154,8 +162,10 @@ function jsonResponse(body: any): Response {
         : value
     )
     , {
+      status: statusCode,
       headers: {
-        "content-type": "application/json"
+        "content-type": "application/json",
+        "access-control-allow-origin": "*"
       }
     })
 }

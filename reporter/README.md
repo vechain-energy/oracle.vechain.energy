@@ -10,6 +10,8 @@ Configuration access is protected with an API-Key.
 
 Each source is required to provide a JSON output. The numerical value is retrieved from a specified `path` in the source's output.
 
+The API is documented in [`public/swagger.yml`](./public/swagger.yml).
+
 ## Local Development
 
 Configure `.dev.vars` with:

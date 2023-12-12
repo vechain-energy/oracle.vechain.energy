@@ -1,0 +1,177 @@
+openapi: 3.0.3
+info:
+  title: Oracle API
+  version: 1.0.0
+servers:
+  - url: "http://localhost:8787"
+paths:
+  /{feedId}:
+    get:
+      summary: get feed status and latest value
+      parameters:
+        - in: path
+          name: feedId
+          schema:
+            type: string
+            example: "vet-usd"
+          required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema: 
+                 $ref: '#/components/schemas/FeedStatus'
+        '404':
+          description: 'Not Found'
+          content:
+            application/json:
+                schema:
+                    $ref: '#/components/schemas/ResponseError'
+
+    post:
+      summary: add or update a feed configuration
+      parameters:
+        - in: path
+          name: feedId
+          schema:
+            type: string
+            example: "vet-usd"
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema: 
+                $ref: '#/components/schemas/FeedConfiguration'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  id:
+                    type: string
+                    example: "vet-usd"
+        '500':
+          description: 'Error'
+          content:
+            application/json:
+                schema:
+                    $ref: '#/components/schemas/ResponseError'
+      security:
+        - authorization: []
+
+    delete:
+      summary: delete a feed
+      parameters:
+        - in: path
+          name: feedId
+          schema:
+            type: string
+            example: "vet-usd"
+          required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+      security:
+        - authorization: []
+
+components:
+  securitySchemes:
+    authorization:
+      description: Authorization Token 
+      type: apiKey
+      name: x-api-key
+      in: header
+  schemas:
+    FeedConfiguration:
+     type: object
+     properties:
+        id:
+          type: string
+          example: "vet-usd"
+        sources:
+          type: array
+          items:
+            type: object
+            properties:
+              url:
+                type: string
+                example: "https://api.coinbase.com/v2/exchange-rates?currency=VET"
+              path:
+                type: string
+                example: ".data.rates.USD"
+        heartbeat:
+          type: integer
+          example: 3600
+        deviationPoints:
+          type: integer
+          example: 100
+        interval:
+          type: integer
+          example: 60
+        contract:
+          type: object
+          properties:
+            nodeUrl:
+              type: string
+              example: "https://node-testnet.vechain.energy"
+            address:
+              type: string
+    FeedStatus:
+       type: object
+       properties:
+           id:
+             type: string
+             example: "vet-usd"
+           heartbeat:
+             type: integer
+             example: 3600
+           deviationPoints:
+             type: integer
+             example: 100
+           interval:
+             type: integer
+             example: 60
+           nextUpdate:
+              type: integer
+              example: 60
+              optional: true
+           latestValue:
+             type: object
+             optional: true
+             properties:
+               id:
+                 type: string
+                 example: "vet-usd"
+               value:
+                 type: string
+                 description: uint128 value
+                 example: "29175281535"
+               formattedValue:
+                 type: string
+                 description: parseUnits(value, 12)
+                 example: "0.029175281535"
+               updatedAt:
+                 type: string
+                 description: uint128 value
+    ResponseError:
+     type: object
+     properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+          example: "Internal Error"
