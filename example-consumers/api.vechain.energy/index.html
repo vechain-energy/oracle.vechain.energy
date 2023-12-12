@@ -1,0 +1,28 @@
+<html>
+
+<body>
+    <a href="https://api.vechain.energy/v1/call/test/0x12E3582D7ca22234f39D2A7BE12C98ea9c077E25/getLatestValue (bytes32 0x7665742d75736400000000000000000000000000000000000000000000000000) returns (uint128 value, uint128 updatedAt)" style="text-decoration: none;">
+        <pre>
+&lt;!-- API URL --&gt; https://api.vechain.energy/v1/call/test/
+&lt;!-- Contract Address --&gt; 0x12E3582D7ca22234f39D2A7BE12C98ea9c077E25/
+&lt;!-- Function Signature --&gt; getLatestValue (bytes32 0x7665742d75736400000000000000000000000000000000000000000000000000) returns (uint128 value, uint128 updatedAt)
+        </pre>
+    </a>
+
+    <pre>
+curl -XPOST "https://api.vechain.energy/v1/call/test/" \
+-H "content-type: application/json" \
+-d '
+{
+    "clauses": [
+        {
+            "to": "0x12E3582D7ca22234f39D2A7BE12C98ea9c077E25",
+            "signature": "getLatestValue (bytes32 0x7665742d75736400000000000000000000000000000000000000000000000000) returns (uint128 value, uint128 updatedAt)"
+        }
+    ]
+}
+'
+                </pre>
+</body>
+
+</html>
