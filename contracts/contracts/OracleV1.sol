@@ -6,11 +6,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 
 /// @custom:security-contact security@builder.eco
-contract OracleV1 is
-    Initializable,
-    UUPSUpgradeable,
-    AccessControlUpgradeable
-{
+contract OracleV1 is Initializable, UUPSUpgradeable, AccessControlUpgradeable {
     bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
     bytes32 public constant REPORTER_ROLE = keccak256("REPORTER_ROLE");
 
@@ -47,7 +43,7 @@ contract OracleV1 is
 
     function getLatestValue(
         bytes32 id
-    ) public view returns (uint128 value, uint128 updatedAt) {
+    ) external view returns (uint128 value, uint128 updatedAt) {
         require(tokenOracles[id].updatedAt > 0, "invalid id");
         return (tokenOracles[id].value, tokenOracles[id].updatedAt);
     }
