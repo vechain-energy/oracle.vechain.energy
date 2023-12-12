@@ -35,11 +35,10 @@ async function main() {
         await deployedContract.deployed()
 
         // archive contract interface and address
-        writeFileSync(`${networkArtifactsDir}/${contractName}.json`, JSON.stringify({ address: deployedContract.address, abi }, '', 2))
-
+        writeFileSync(`${networkArtifactsDir}/${contractName}.json`, JSON.stringify({ address: deployedContract.deployTransaction.creates, abi }, '', 2))
         deploying.info(`[${contractName}] Artifact written to ${networkArtifactsDir}/${contractName}.json`)
         deploying.info(`[${contractName}] Transaction Id: ${deployedContract.deployTransaction.hash}`)
-        deploying.succeed(`[${contractName}] Contract is now available at ${deployedContract.address}\n`)
+        deploying.succeed(`[${contractName}] Contract is now available at ${deployedContract.deployTransaction.creates}\n`)
     }
 }
 

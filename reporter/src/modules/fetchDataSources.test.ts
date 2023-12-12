@@ -38,11 +38,11 @@ describe('fetchDataSources(config)', () => {
         })
 
         const result = await fetchDataSources(config)
-        expect(String(result)).toEqual(String(ethers.parseUnits(String((102 + 108) / 2), 18)))
+        expect(String(result)).toEqual(String(ethers.parseUnits(String((102 + 108) / 2), 12)))
     })
 
 
-    it('returns bigint with 18 decimal representation (parseUnits(value, 18))', async () => {
+    it('returns bigint with 12 decimal representation (parseUnits(value, 12) / uint128)', async () => {
         const config = getMockTask({
             sources: [{ url: 'https://postman-echo.com/get?key=102', path: '.test.key' }]
         })
@@ -53,7 +53,7 @@ describe('fetchDataSources(config)', () => {
 
         fetchMock.mockResolvedValue(mockResponse as any)
         const result = await fetchDataSources(config)
-        expect(String(result)).toEqual(String(ethers.parseUnits("1", 18)))
+        expect(String(result)).toEqual(String(ethers.parseUnits("1", 12)))
     })
 
 
@@ -67,7 +67,7 @@ describe('fetchDataSources(config)', () => {
         })
 
         const result = await fetchDataSources(config)
-        expect(String(result)).toEqual(String(ethers.parseUnits(String((103 + 106) / 2), 18)))
+        expect(String(result)).toEqual(String(ethers.parseUnits(String((103 + 106) / 2), 12)))
     })
 
     it('ignores sources that are have a 10% difference to the others', async () => {
@@ -80,7 +80,7 @@ describe('fetchDataSources(config)', () => {
         })
 
         const result = await fetchDataSources(config)
-        expect(String(result)).toEqual(String(ethers.parseUnits(String((101 + 102) / 2), 18)))
+        expect(String(result)).toEqual(String(ethers.parseUnits(String((101 + 102) / 2), 12)))
     })
 
 
