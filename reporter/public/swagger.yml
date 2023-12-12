@@ -87,6 +87,53 @@ paths:
       security:
         - authorization: []
 
+  /{feedId}?sender={sender}&data={data}:
+    get:
+      summary: get hexlified signed response
+      description: "the response is an encoded representation of latestValue(feedId) abi encoded with (bytes response, uint64 validUntil, bytes signature). data can be passed on its signature proofs that it was signed by the oracles reporter."
+      parameters:
+        - in: path
+          name: feedId
+          schema:
+            type: string
+            example: "vet-usd"
+          required: true
+        - in: query
+          name: sender
+          schema:
+            type: string
+            example: "0x301aee1259f182636fadae08871269abe55f482c"
+          required: true
+        - in: query
+          name: data
+          schema:
+            type: string
+            example: "0x7665742d757364"
+          required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema: 
+                 type: object
+                 properties:
+                  data:
+                    type: string
+                    example: "0x0000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000006578bb6900000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000006de5b002a000000000000000000000000000000000000000000000000000000006578ad540000000000000000000000000000000000000000000000000000000000000041152cab1cf1f5ebfecf9ddf1bdb7940aa41b512ee366222179d730197716d7ec822cbd8b54f790af7eb301143391115b06f87687027c4e4c2acd72035a45b0db31c00000000000000000000000000000000000000000000000000000000000000"
+        '404':
+          description: 'Not Found'
+          content:
+            application/json:
+                schema:
+                    $ref: '#/components/schemas/ResponseError'
+        '500':
+          description: 'Internal Errors'
+          content:
+            application/json:
+                schema:
+                    $ref: '#/components/schemas/ResponseError'
+
 components:
   securitySchemes:
     authorization:

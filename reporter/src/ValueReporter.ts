@@ -1,8 +1,9 @@
-import { type Env, type FeedConfig, type Report, FeedConfigSchema, ReportSchema } from './types'
+import { type Env, type FeedConfig, type Report, CcipRequestSchema, FeedConfigSchema, ReportSchema } from './types'
 import { z } from 'zod'
 import publishReport from './modules/publishReport';
 import fetchDataSources from './modules/fetchDataSources';
 import isUpdateRequired from './modules/isUpdateRequired'
+import signCcipRequest from './modules/signCcipRequest';
 import { ethers } from 'ethers';
 
 const StatusSchema = z.object({
@@ -46,29 +47,14 @@ export class ValueReporter {
 
           const url = new URL(request.url)
           if (url.searchParams.has('sender') && url.searchParams.has('data')) {
+
             if (!latestValue) {
-              throw new Error('could not a cached value to response with')
+              return jsonResponse({ error: 'could not a cached value to response with' }, 500)
             }
-            const validUntil = Math.floor(Date.now() / 1000 + config.heartbeat)
-            const encodedResponse = ethers.AbiCoder.defaultAbiCoder().encode(['uint128', 'uint128'], [latestValue.value, latestValue.updatedAt])
 
-            const messageHash = ethers.solidityPackedKeccak256(
-              ["bytes", "address", "uint64", "bytes32", "bytes32"],
-              [
-                "0x1900",
-                url.searchParams.get('sender'),
-                validUntil,
-                ethers.keccak256('0x'),
-                ethers.keccak256(encodedResponse),
-              ]
-            );
-
-            const signer = new ethers.SigningKey(this.env?.PRIVATE_KEY ?? '');
-            const sig = signer.sign(messageHash);
-            const sigData = ethers.concat([sig.r, sig.s, `0x${sig.v.toString(16)}`])
-
-            const data = ethers.AbiCoder.defaultAbiCoder().encode(['bytes', 'uint64', 'bytes'], [encodedResponse, validUntil, sigData])
-
+            const request = CcipRequestSchema.parse({ sender: url.searchParams.get('sender'), data: url.searchParams.get('data') })
+            const report = { id: config.id, value: latestValue.value, updatedAt: Number(latestValue.updatedAt) }
+            const data = await signCcipRequest({ request, config, report, env: this.env })
             return jsonResponse({ data })
           }
 
@@ -89,8 +75,8 @@ export class ValueReporter {
           return jsonResponse(status)
         }
         catch (err) {
-          console.error(err)
-          return jsonResponse({ error: 'feed not found' }, 404)
+          const errorMessage = err instanceof Error ? String(err.message) : String(err)
+          return jsonResponse({ error: errorMessage ? errorMessage : 'feed not found' }, 404)
         }
       }
 

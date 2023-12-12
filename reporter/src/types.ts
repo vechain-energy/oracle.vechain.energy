@@ -27,6 +27,12 @@ export const StatusSchema = z.object({
   nextExecution: z.number().nullable(),
 });
 
+export const CcipRequestSchema = z.object({
+  sender: z.string(),
+  data: z.string()
+})
+
+export type CcipRequest = z.infer<typeof CcipRequestSchema>;
 
 export interface Env {
   ValueReporter: DurableObjectNamespace

@@ -1,8 +1,6 @@
 const { Framework } = require('@vechain/connex-framework')
 const { Driver, SimpleNet } = require('@vechain/connex-driver')
-const thor = require('@vechain/web3-providers-connex')
-const { ethers, Contract, Interface } = require('ethers')
-const { CCIPReadProvider } = require('@chainlink/ethers-ccip-read-provider')
+const { ethers, Interface } = require('ethers')
 
 const contractAddress = '0x301aee1259F182636FadAe08871269aBE55f482c'
 
@@ -16,24 +14,6 @@ const ccipContract = new Interface([
 async function main() {
     const driver = await Driver.connect(new SimpleNet('https://node-testnet.vechain.energy'))
     const connex = new Framework(driver)
-
-    // const outerProvider = thor.ethers.modifyProvider(
-    //     new ethers.BrowserProvider(
-    //         new thor.Provider({ connex })
-    //     )
-    // )
-
-    // const provider = new CCIPReadProvider(outerProvider);
-
-    // const contract = new Contract(contractAddress, [
-    //     'function usdPriceVet() external view'
-    // ], provider);
-
-
-
-    // const result = await contract.usdPriceVet()
-    // console.log(result)
-
 
     const result = await connex.thor
         .account(contractAddress)
@@ -59,6 +39,7 @@ async function main() {
                     console.log('fetching response from', url)
 
                     if (url.includes('{data}')) {
+                        console.log(`${url}`.replace('{sender}', backendArgs.sender).replace('{data}', backendArgs.data))
                         return await fetch(`${url}`.replace('{sender}', backendArgs.sender).replace('{data}', backendArgs.data))
                     } else {
                         return await fetch(`${url}`, {
@@ -73,6 +54,7 @@ async function main() {
                 })()
 
                 const { data } = await response.json()
+                console.log(data)
                 const result = await connex.thor
                     .account(contractAddress)
                     .method({
@@ -109,7 +91,6 @@ async function main() {
                 }
 
                 console.log('Current data is', ethers.formatUnits(result.decoded.value, 12), 'updated at', (new Date(Number(result.decoded.updatedAt) * 1000).toISOString()))
-
             }
         }
     }
