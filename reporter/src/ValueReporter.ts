@@ -42,8 +42,37 @@ export class ValueReporter {
       if (request.method === 'GET') {
         try {
           const config = await this.getFeedConfig()
-          const nextUpdate = await this.storage.getAlarm()
           const latestValue = await this.storage.get<Report>('latestValue')
+
+          const url = new URL(request.url)
+          if (url.searchParams.has('sender') && url.searchParams.has('data')) {
+            if (!latestValue) {
+              throw new Error('could not a cached value to response with')
+            }
+            const validUntil = Math.floor(Date.now() / 1000 + config.heartbeat)
+            const encodedResponse = ethers.AbiCoder.defaultAbiCoder().encode(['uint128', 'uint128'], [latestValue.value, latestValue.updatedAt])
+
+            const messageHash = ethers.solidityPackedKeccak256(
+              ["bytes", "address", "uint64", "bytes32", "bytes32"],
+              [
+                "0x1900",
+                url.searchParams.get('sender'),
+                validUntil,
+                ethers.keccak256('0x'),
+                ethers.keccak256(encodedResponse),
+              ]
+            );
+
+            const signer = new ethers.SigningKey(this.env?.PRIVATE_KEY ?? '');
+            const sig = signer.sign(messageHash);
+            const sigData = ethers.concat([sig.r, sig.s, `0x${sig.v.toString(16)}`])
+
+            const data = ethers.AbiCoder.defaultAbiCoder().encode(['bytes', 'uint64', 'bytes'], [encodedResponse, validUntil, sigData])
+
+            return jsonResponse({ data })
+          }
+
+          const nextUpdate = await this.storage.getAlarm()
           const status = <Status>{
             id: config.id,
             interval: config.interval,
@@ -59,7 +88,8 @@ export class ValueReporter {
           }
           return jsonResponse(status)
         }
-        catch {
+        catch (err) {
+          console.error(err)
           return jsonResponse({ error: 'feed not found' }, 404)
         }
       }
