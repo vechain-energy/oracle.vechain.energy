@@ -19,12 +19,8 @@ export default {
 			return new Response("Method Not Allowed", { status: 405 })
 		}
 
-		if (!publicMethods.includes(request.method) && request.headers.get('x-api-key') !== env.API_KEY) {
-			return new Response("Access Denied", { status: 403 })
-		}
-
 		const url = new URL(request.url)
-		const idFromUrl = url.pathname.slice(1)
+		const idFromUrl = url.pathname.slice(1).split('/')[0]
 		const doId = env.ValueReporter.idFromName(idFromUrl);
 		const stub = env.ValueReporter.get(doId)
 		return stub.fetch(request)

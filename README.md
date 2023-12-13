@@ -8,6 +8,9 @@
 * [**reporter/**](./reporter/) is a Cloudflare Worker that collects & reports new values to the on-chain-contracts
    * Is configurable with a JSON-Object, to support different sources and multiple feeds
    * Extracts a final value and stores it in a contract
+   * Provides a public API to access the latest value fetched from data sources, that has not been stored on-chain yet
+     * as pure information for processing
+     * and signed for verification in contracts
 * [**example-consumers/**](./example-consumers/) contains sample snippets accessing the feed data
 
 ```mermaid
