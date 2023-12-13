@@ -20,19 +20,26 @@ export const ReportSchema = z.object({
   value: z.bigint(),
   updatedAt: z.number(),
 });
-
-export const StatusSchema = z.object({
-  config: FeedConfigSchema,
-  lastReport: ReportSchema,
-  nextExecution: z.number().nullable(),
-});
-
 export const CcipRequestSchema = z.object({
   sender: z.string(),
-  data: z.string()
+  urls: z.array(z.string()).optional(),
+  callData: z.string(),
+  callbackFunction: z.string().optional(),
+  extraData: z.string().optional(),
 })
 
 export type CcipRequest = z.infer<typeof CcipRequestSchema>;
+
+
+export const StatusSchema = z.object({
+  interval: z.number(),
+  heartbeat: z.number(),
+  deviationPoints: z.number(),
+  nextUpdate: z.number().nullable(),
+  latestValue: ReportSchema.extend({
+    formattedValue: z.string(),
+  }).optional(),
+});
 
 export interface Env {
   ValueReporter: DurableObjectNamespace
@@ -42,6 +49,5 @@ export interface Env {
 }
 
 export type Report = z.infer<typeof ReportSchema>;
-export type Status = z.infer<typeof StatusSchema>;
 export type FeedConfig = z.infer<typeof FeedConfigSchema>;
-
+export type Status = z.infer<typeof StatusSchema>;

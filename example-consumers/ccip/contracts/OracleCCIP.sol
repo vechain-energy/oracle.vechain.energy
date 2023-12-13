@@ -5,7 +5,7 @@ import "./utils/SignatureVerifier.sol";
 
 contract OracleCCIP {
     address oracleSigner = 0x56cB0E0276AD689Cc68954D47460cD70f46244DC;
-    string oracleUrl = "http://localhost:8787/vet-usd?sender={sender}&data={data}";
+    string oracleUrl = "http://localhost:8787/vet-usd/signed";
 
     error InvalidOperation();
     error OffchainLookup(
@@ -26,7 +26,7 @@ contract OracleCCIP {
             urls,
             feedId,
             this.usdPriceVetWithProof.selector,
-            ""
+            feedId
         );
     }
 
@@ -36,7 +36,7 @@ contract OracleCCIP {
     function usdPriceVetWithProof(
         bytes calldata response,
         bytes calldata extraData
-    ) public view returns (uint128 value, uint128 updatedAt) {
+    ) public view returns (uint128 value, uint128 updatedAt, bytes32 feedId) {
         (address signer, bytes memory result) = SignatureVerifier.verify(
             address(this),
             extraData,
@@ -44,5 +44,6 @@ contract OracleCCIP {
         );
         require(signer == oracleSigner, "SignatureVerifier: Invalid sigature");
         (value, updatedAt) = abi.decode(result, (uint128, uint128));
+        feedId = bytes32(extraData);
     }
 }

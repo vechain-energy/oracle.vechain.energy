@@ -1,9 +1,9 @@
 import type { FeedConfig, Report, Env, CcipRequest, CcipRequestSchema } from '../types'
 import { decodeBytes32String, ethers } from 'ethers';
 
-export default async function signCcipRequest({ request, config, report, env }: { request: CcipRequest, config: FeedConfig, report: Report, env?: Env }): Promise<string> {
+export default async function signCcipRequest({ request, config, report, env }: { request: CcipRequest, config: FeedConfig, report: Report, env?: { PRIVATE_KEY: string } }): Promise<string> {
     // verify request data
-    const requestedFeedId = decodeBytes32String(request.data.padEnd(66, '0'))
+    const requestedFeedId = decodeBytes32String(request.callData.padEnd(66, '0'))
     if (requestedFeedId !== config.id) { throw new Error(`${requestedFeedId} requested but ${config.id} call`) }
 
     // encode a response that is valid until the next heartbeat
@@ -17,7 +17,7 @@ export default async function signCcipRequest({ request, config, report, env }: 
             "0x1900",
             request.sender,
             validUntil,
-            ethers.keccak256('0x'),
+            ethers.keccak256(request.extraData ?? '0x'),
             ethers.keccak256(encodedResponse),
         ]
     );

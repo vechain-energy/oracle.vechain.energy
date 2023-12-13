@@ -2,13 +2,16 @@ const { Framework } = require('@vechain/connex-framework')
 const { Driver, SimpleNet } = require('@vechain/connex-driver')
 const { ethers, Interface } = require('ethers')
 
-const contractAddress = '0x301aee1259F182636FadAe08871269aBE55f482c'
-
+const contractAddress = process.argv[2]
+if (!contractAddress) {
+    console.error('missing contract address, use node test.js <address>')
+    process.exit(1)
+}
 
 const ccipContract = new Interface([
     'function usdPriceVet() external view',
     'error OffchainLookup(address sender, string[] urls, bytes callData, bytes4 callbackFunction, bytes extraData)',
-    'function usdPriceVetWithProof(bytes calldata response, bytes calldata extraData) public view returns (uint128 value, uint128 updatedAt)'
+    'function usdPriceVetWithProof(bytes calldata response, bytes calldata extraData) public view returns (uint128 value, uint128 updatedAt, bytes feedId)'
 ])
 
 async function main() {
@@ -32,17 +35,24 @@ async function main() {
         if (error.name === 'OffchainLookup') {
 
             console.log('OffchainLookup detected')
-            const backendArgs = { sender: ethers.hexlify(error.args[0]), data: ethers.hexlify(error.args.callData) };
+            const backendArgs = {
+                sender: ethers.hexlify(error.args[0]),
+                urls: error.args.urls,
+                callData: ethers.hexlify(error.args.callData),
+                callbackFunction: ethers.hexlify(error.args.callbackFunction),
+                extraData: ethers.hexlify(error.args.extraData)
+            };
 
             for (const url of error.args.urls) {
                 const response = await (async() => {
                     console.log('fetching response from', url)
-
+                    const queryUrl = url.replace(/\{([^}]*)\}/g, (match, p1) => backendArgs[p1]);
                     if (url.includes('{data}')) {
                         console.log(`${url}`.replace('{sender}', backendArgs.sender).replace('{data}', backendArgs.data))
-                        return await fetch(`${url}`.replace('{sender}', backendArgs.sender).replace('{data}', backendArgs.data))
+                        return await fetch(queryUrl)
                     } else {
-                        return await fetch(`${url}`, {
+                        console.log(backendArgs)
+                        return await fetch(`${queryUrl}`, {
                             method: 'POST',
                             headers: {
                                 'content-type': 'application/json'
@@ -54,7 +64,6 @@ async function main() {
                 })()
 
                 const { data } = await response.json()
-                console.log(data)
                 const result = await connex.thor
                     .account(contractAddress)
                     .method({
@@ -79,6 +88,11 @@ async function main() {
                                 "internalType": "uint128",
                                 "name": "updatedAt",
                                 "type": "uint128"
+                            },
+                            {
+                                "internalType": "bytes32",
+                                "name": "feedId",
+                                "type": "bytes32"
                             }
                         ],
                         "stateMutability": "view",
@@ -87,10 +101,11 @@ async function main() {
                     .call(data, error.args.extraData)
 
                 if (result.reverted) {
+                    console.error(result)
                     throw new Error(result.revertReason)
                 }
 
-                console.log('Current data is', ethers.formatUnits(result.decoded.value, 12), 'updated at', (new Date(Number(result.decoded.updatedAt) * 1000).toISOString()))
+                console.log('Current data is', ethers.formatUnits(result.decoded.value, 12), 'updated at', (new Date(Number(result.decoded.updatedAt) * 1000).toISOString()), result.decoded.feedId)
             }
         }
     }
