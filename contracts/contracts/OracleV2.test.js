@@ -86,4 +86,50 @@ describe('OracleV2', () => {
             await expect(Number(event.args.updatedAt)).toEqual(Number(tokenData[2]))
         })
     })
+
+    describe('updateValuePublic(message, feedId)', () => {
+        it('stores input correctly', async() => {
+            const { contracts, users } = await bootSystem()
+            const tokenData = [ethers.utils.formatBytes32String("test"), BigInt(1), BigInt(3)]
+
+            const data = signCcipRequestWith({
+                sender: '0x09425C56F3c24E72dFa3E15f007435eb048b6c61',
+                validUntil: Math.ceil(Date.now() / 1000) + 60,
+                callData: tokenData[0],
+                extraData: tokenData[0],
+                value: tokenData[1],
+                updatedAt: tokenData[2]
+            }, '0x4c764fa090cf8cc7a90b62881202f94aaaca380bb17d13925d1e84ae0f1d99af')
+
+            await contracts.oracleV2.connect(users.reporter).updateOracleUpdaterAddress('0x09425C56F3c24E72dFa3E15f007435eb048b6c61')
+            await contracts.oracleV2.connect(users.anon).updateValuePublic(data, tokenData[0])
+
+            const result = await contracts.oracleV2.getLatestValue(tokenData[0])
+
+            await expect(Number(result[0])).toEqual(Number(tokenData[1]))
+            await expect(Number(result[1])).toEqual(Number(tokenData[2]))
+        })
+    })
 })
+
+
+
+function signCcipRequestWith(message, privateKey) {
+    const encodedResponse = ethers.utils.defaultAbiCoder.encode(['uint128', 'uint128'], [message.value, message.updatedAt])
+    const messageHash = ethers.utils.solidityKeccak256(
+        ["bytes", "address", "uint64", "bytes32", "bytes32"], [
+            "0x1900",
+            message.sender,
+            message.validUntil,
+            ethers.utils.keccak256(message.extraData || '0x'),
+            ethers.utils.keccak256(encodedResponse),
+        ]
+    );
+
+    // sign the message with the backends private key
+    const signer = new ethers.utils.SigningKey(privateKey);
+    const signature = signer.signDigest(messageHash);
+    const signatureData = ethers.utils.hexConcat([signature.r, signature.s, ethers.utils.hexlify(signature.v)])
+
+    return ethers.utils.defaultAbiCoder.encode(['bytes', 'uint64', 'bytes'], [encodedResponse, message.validUntil, signatureData])
+}
