@@ -12,5 +12,5 @@ yarn add ethers @chainlink/ethers-ccip-read-provider @vechain/web3-providers-con
 ## Run
 
 ```shell
-node test.js
+node test.js <Address>
 ```
