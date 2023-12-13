@@ -39,7 +39,6 @@ contract OracleConsumer {
         (, uint128 updatedAt) = VechainEnergyOracleV1(oracleAddress)
             .getLatestValue(feedId);
 
-        uint64 oneHour = 3600;
-        isNewer = (block.timestamp - updatedAt) < oneHour;
+        isNewer = (block.timestamp - updatedAt) < 1 hours;
     }
 }
