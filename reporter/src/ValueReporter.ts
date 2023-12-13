@@ -220,7 +220,7 @@ export class ValueReporter {
     }
 
     const report = { id: config.id, value: latestValue.value, updatedAt: Number(latestValue.updatedAt) }
-    const data = await signCcipRequest({ request, config, report, env: this.env })
+    const data = signCcipRequest({ request, config, report, env: this.env })
     return jsonResponse({ data })
 
   }

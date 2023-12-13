@@ -1,7 +1,7 @@
-import type { FeedConfig, Report, Env, CcipRequest, CcipRequestSchema } from '../types'
+import type { FeedConfig, Report, CcipRequest } from '../types'
 import { decodeBytes32String, ethers } from 'ethers';
 
-export default async function signCcipRequest({ request, config, report, env }: { request: CcipRequest, config: FeedConfig, report: Report, env?: { PRIVATE_KEY: string } }): Promise<string> {
+export default function signCcipRequest({ request, config, report, env }: { request: CcipRequest, config: FeedConfig, report: Report, env?: { PRIVATE_KEY: string } }): string {
     // verify request data
     const requestedFeedId = decodeBytes32String(request.callData.padEnd(66, '0'))
     if (requestedFeedId !== config.id) { throw new Error(`${requestedFeedId} requested but ${config.id} call`) }
