@@ -22,7 +22,7 @@ contract OracleUpgradeable is
     /**
      * @dev Struct to hold the feed value
      */
-    struct FeedValue {
+    struct Report {
         uint128 value;
         uint128 updatedAt;
     }
@@ -30,7 +30,7 @@ contract OracleUpgradeable is
     /**
      * @dev The mapping of data feed ids to values
      */
-    mapping(bytes32 => FeedValue) internal tokenOracles;
+    mapping(bytes32 => Report) private feed;
 
     /**
      * @dev Emitted when a value is changed.
@@ -79,7 +79,7 @@ contract OracleUpgradeable is
     function getLatestValue(
         bytes32 id
     ) public view returns (uint128 value, uint128 updatedAt) {
-        return (tokenOracles[id].value, tokenOracles[id].updatedAt);
+        return (feed[id].value, feed[id].updatedAt);
     }
 
     /**
@@ -120,7 +120,7 @@ contract OracleUpgradeable is
         uint128 newValue,
         uint128 newTimestamp
     ) internal {
-        tokenOracles[id] = FeedValue(newValue, newTimestamp);
+        feed[id] = Report(newValue, newTimestamp);
         emit ValueUpdate(id, newValue, newTimestamp);
     }
 

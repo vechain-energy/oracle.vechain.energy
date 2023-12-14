@@ -11,7 +11,7 @@ contract OracleGasOptimized {
     /**
      * @dev Mapping of data feed ids to values
      */
-    mapping(bytes32 => uint256) internal values;
+    mapping(bytes32 => uint256) private feed;
 
     /**
      * @dev Emitted when a value is changed.
@@ -21,7 +21,7 @@ contract OracleGasOptimized {
     /**
      * @dev The address allowed to submit new values
      */
-    address reporter;
+    address private reporter;
     event ReporterUpdate(address newUpdater);
 
     /**
@@ -51,8 +51,8 @@ contract OracleGasOptimized {
     function getLatestValue(
         bytes32 id
     ) public view returns (uint128 value, uint128 updatedAt) {
-        updatedAt = (uint128)(values[id] % 2 ** 128);
-        value = (uint128)(values[id] >> 128);
+        updatedAt = (uint128)(feed[id] % 2 ** 128);
+        value = (uint128)(feed[id] >> 128);
     }
 
     /**
@@ -93,7 +93,7 @@ contract OracleGasOptimized {
         uint128 value,
         uint128 timestamp
     ) internal {
-        values[id] = (((uint256)(value)) << 128) + timestamp;
+        feed[id] = (((uint256)(value)) << 128) + timestamp;
         emit ValueUpdate(id, value, timestamp);
     }
 
