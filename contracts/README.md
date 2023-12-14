@@ -48,7 +48,7 @@ yarn test
 
 ### Deployment Instructions
 
-***Oracle Gas Optimized***
+#### Oracle Gas Optimized
 
 This contract is gas optimized and can only have one reporter.
 
@@ -63,9 +63,7 @@ PRIVATE_KEY="0x…" NETWORK=main yarn deploy OracleGasOptimized
 After deployment, the ABI and Addresses are archived in the `outputs/` folder.
 
 
-
-
-**Oracle Upgradelabe**
+####  Oracle Upgradeable
 
 This contract is designed to be upgradable and uses roles for access control.
 
