@@ -23,3 +23,36 @@ node test-OracleCCIP.js <Deployment Address>
 # To test OraclePublicUpdater.sol
 node test-OraclePublicUpdater.js <Deployment Address>
 ```
+
+
+## Process
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Oracle-Service
+    participant Oracle-Contract
+
+    note over Client, Oracle-Service: Client retrieves the last known value from the Oracle-Service
+    Client->>Contract: function()
+    Contract-->>Client: revert OffchainLoop(address(this) as sender, urls, callData, callbackFunction, extraData)
+    Client->Oracle-Service: fetch(urls, { sender, urls, callData, callbackFunction, extraData })
+    Oracle-Service-->>Client: sign(uint128 latestValue, uint128 timestamp, bytes32 feedId)
+    Client->>Contract: callbackFunction(response, extraData)
+    Contract->>Contract: verify signature
+    opt if signature / signer of response is invalid
+      Contract-->>Client: revert
+    end
+
+
+    note over Client, Oracle-Service: Client updates the Oracle with new data
+    Client->>Oracle-Service: fetch sender & feedId
+    Oracle-Service-->>Client: sign(uint128 latestValue, uint128 timestamp, bytes32 feedId)
+    Client->>Contract: yourFunction(response, extraData, sender)
+    note over Client, Contract: Any Client or Contract can update Oracle with the verified data
+    Contract->>Oracle-Contract: updateFeedWithProof(response, extraData, sender)
+    Oracle-Contract-->>Oracle-Contract: verify signature & data age
+    opt if signature / signer is invalid or data is older
+      Oracle-Contract-->>Contract: revert
+    end
+```
