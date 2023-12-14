@@ -8,7 +8,11 @@ import "./utils/SignatureVerifier.sol";
 import "hardhat/console.sol";
 
 /// @custom:security-contact security@builder.eco
-contract OracleUpgradeable is Initializable, UUPSUpgradeable, AccessControlUpgradeable {
+contract OracleUpgradeable is
+    Initializable,
+    UUPSUpgradeable,
+    AccessControlUpgradeable
+{
     bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
     bytes32 public constant REPORTER_ROLE = keccak256("REPORTER_ROLE");
 
@@ -17,7 +21,7 @@ contract OracleUpgradeable is Initializable, UUPSUpgradeable, AccessControlUpgra
         uint128 updatedAt;
     }
 
-    mapping(bytes32 => TokenData) tokenOracles;
+    mapping(bytes32 => TokenData) internal tokenOracles;
 
     event ValueUpdate(bytes32 id, uint128 value, uint128 updatedAt);
 
@@ -81,7 +85,6 @@ contract OracleUpgradeable is Initializable, UUPSUpgradeable, AccessControlUpgra
     function isReporter(address user) public view returns (bool) {
         return hasRole(REPORTER_ROLE, user);
     }
-
 
     function _authorizeUpgrade(
         address newImplementation

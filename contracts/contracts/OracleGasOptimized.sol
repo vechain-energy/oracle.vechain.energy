@@ -4,7 +4,7 @@ pragma solidity ^0.8.19;
 import "./utils/SignatureVerifier.sol";
 
 contract OracleGasOptimized {
-    mapping(bytes32 => uint256) public values;
+    mapping(bytes32 => uint256) internal values;
     address reporter;
 
     event ValueUpdate(bytes32 id, uint128 value, uint128 updatedAt);

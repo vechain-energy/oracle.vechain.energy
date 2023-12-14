@@ -1,6 +1,25 @@
 # Oracle / Data Feed for Vechain
 
-There are two different contracts available, one that uses OpenZeppelins role management and is upgradable. The second one is simplified to use less gas (25% per update) in the long run.
+We offer two types of contracts. One is upgradable and uses OpenZeppelin's role management. The other is a simplified version that uses less gas (40% less per update) over time.
+
+Both contracts have the same public interface:
+
+```sol
+interface IVechainEnergyOracleV1 {
+    // emitted when data changes
+    event ValueUpdate(bytes32 id, uint128 value, uint128 updatedAt);
+
+    // access value for a given feed id
+    function getLatestValue(bytes32 id) external view returns (uint128 value, uint128 updatedAt);
+
+    // allows everyon to update values using a verified & signed responses from the public API
+    function updateValueWithProof(bytes memory message, bytes memory extraData, address signedFor) external;
+}
+```
+
+* `id` is a byte32 encoded version of the feed identifier (for example `vet-usd`)
+* `value` is the value provided by the oracle
+* `updatedAt` is the unix timestamp when the value was last determined
 
 ## Contract Details
 
