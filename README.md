@@ -76,8 +76,8 @@ First, deploy an Oracle-Contract from the [contracts](./contracts) directory.
 
 ### Collecting Data
 
-- Register on [Cloudflare](https://cloudflare.com) and set up a new [Reporter](./reporter).
-- Register on [vechain.energy](https://vechain.energy) and set up a new [API-Relay](https://docs.vechain.energy/vechain.energy/API-Keys/).
+- Register on [Cloudflare](https://cloudflare.com), it will host the backend using [Cloudflare Workers](https://developers.cloudflare.com/workers/).
+- Register on [vechain.energy](https://vechain.energy) and set up [API-Relay](https://docs.vechain.energy/vechain.energy/API-Keys/). Configure it to interact with everyone.
 - Deploy the Reporter.
 - Set up the Reporter with:
   - Access to your Oracle-Contract.
@@ -242,6 +242,7 @@ vet-usd sleeping till 2023-12-14T12:50:27.491Z
 
 check value:
 ```shell
+# Check the contract on the Blockchain
 $ curl -s -XPOST "https://api.vechain.energy/v1/call/test" \
 -H "content-type: application/json" \
 -d '
@@ -261,5 +262,21 @@ $ curl -s -XPOST "https://api.vechain.energy/v1/call/test" \
   "__length__": 2,
   "value": "30610244364",
   "timestamp": "1702558104"
+}
+
+# Check the Reporter status
+$ curl -s http://localhost:8787/vet-usd | jq
+{
+  "id": "vet-usd",
+  "interval": 60,
+  "heartbeat": 3600,
+  "deviationPoints": 100,
+  "nextUpdate": null,
+  "latestValue": {
+    "id": "vet-usd",
+    "value": "30610244364",
+    "updatedAt": 1702558104,
+    "formattedValue": "0.030610244364"
+  }
 }
 ```

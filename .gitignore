@@ -13,3 +13,4 @@ install-state.gz
 
 .DS_Store
 .test
+.env
