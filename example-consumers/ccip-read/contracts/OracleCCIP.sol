@@ -3,17 +3,35 @@ pragma solidity ^0.8.19;
 
 import "./utils/SignatureVerifier.sol";
 
-interface VechainEnergyOracleV1 {
+/**
+ * @dev Interface for IVechainEnergyOracleV1
+ */
+interface IVechainEnergyOracleV1 {
     function isReporter(address user) external view returns (bool);
 }
 
+/**
+ * @dev Example contract to show process for off-chain-data-retrieval
+ */
 contract OracleCCIP {
-    VechainEnergyOracleV1 Oracle =
-        VechainEnergyOracleV1(0x12E3582D7ca22234f39D2A7BE12C98ea9c077E25);
+    /**
+     * @dev Instance of IVechainEnergyOracleV1 on TestNet
+     */
+    IVechainEnergyOracleV1 Oracle =
+        IVechainEnergyOracleV1(0x12E3582D7ca22234f39D2A7BE12C98ea9c077E25);
 
+    /**
+     * @dev URL of the oracle
+     */
     string oracleUrl = "http://localhost:8787/vet-usd/signed";
 
+    /**
+     * @dev Error thrown for invalid operations
+     */
     error InvalidOperation();
+    /**
+     * @dev Error thrown for offchain lookup
+     */
     error OffchainLookup(
         address sender,
         string[] urls,
@@ -22,6 +40,9 @@ contract OracleCCIP {
         bytes extraData
     );
 
+    /**
+     * @dev Function to get the USD price of VET. Triggers an error that is handled on the client side.
+     */
     function usdPriceVet() external view {
         string[] memory urls = new string[](1);
         urls[0] = oracleUrl;
@@ -37,7 +58,10 @@ contract OracleCCIP {
     }
 
     /**
-     * Callback used by CCIP read compatible clients to verify and parse the response.
+     * @dev Callback used by CCIP read compatible clients that receives the signed backend response.
+     * @return value The USD price of VET.
+     * @return updatedAt The timestamp of the last update.
+     * @return feedId The feed ID of the data.
      */
     function usdPriceVetWithProof(
         bytes calldata response,

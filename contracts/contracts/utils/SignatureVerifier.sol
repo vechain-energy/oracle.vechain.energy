@@ -47,10 +47,7 @@ library SignatureVerifier {
         );
         bytes32 sigHash = makeSignatureHash(target, expires, request, result);
 
-        address signer = ECDSA.recover(
-            sigHash,
-            sig
-        );
+        address signer = ECDSA.recover(sigHash, sig);
         require(
             expires >= block.timestamp,
             "SignatureVerifier: Signature expired"

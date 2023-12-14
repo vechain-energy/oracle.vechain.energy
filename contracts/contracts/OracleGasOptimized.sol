@@ -3,22 +3,51 @@ pragma solidity ^0.8.19;
 
 import "./utils/SignatureVerifier.sol";
 
+/**
+ * @title OracleGasOptimized
+ * @dev This contract is optimized to use less gas during updates
+ */
 contract OracleGasOptimized {
+    /**
+     * @dev Mapping of data feed ids to values
+     */
     mapping(bytes32 => uint256) internal values;
-    address reporter;
 
+    /**
+     * @dev Emitted when a value is changed.
+     */
     event ValueUpdate(bytes32 id, uint128 value, uint128 updatedAt);
+
+    /**
+     * @dev The address allowed to submit new values
+     */
+    address reporter;
     event ReporterUpdate(address newUpdater);
 
+    /**
+     * @dev Sets the initial reporter to the contract deployer.
+     */
     constructor() {
         reporter = msg.sender;
     }
 
+    /**
+     * @dev Updates the value for a given id. Only the reporter can call this function.
+     * @param id The id for the value to update.
+     * @param value The new value.
+     * @param timestamp The timestamp of the new value.
+     */
     function updateValue(bytes32 id, uint128 value, uint128 timestamp) public {
         require(msg.sender == reporter);
         _updateValue(id, value, timestamp);
     }
 
+    /**
+     * @dev Returns the latest value and its timestamp for a given id.
+     * @param id The id to retrieve the value for.
+     * @return value The latest value.
+     * @return updatedAt The timestamp of the latest value.
+     */
     function getLatestValue(
         bytes32 id
     ) public view returns (uint128 value, uint128 updatedAt) {
@@ -26,6 +55,12 @@ contract OracleGasOptimized {
         value = (uint128)(values[id] >> 128);
     }
 
+    /**
+     * @dev Updates the value for a given id using a signed message. The signature must be valid and the signer must be the reporter.
+     * @param message The signed message.
+     * @param extraData Extra data to verify the signature.
+     * @param signedFor The address the message was signed for.
+     */
     function updateValueWithProof(
         bytes calldata message,
         bytes calldata extraData,
@@ -47,10 +82,21 @@ contract OracleGasOptimized {
         _updateValue(feedId, newValue, newTimestamp);
     }
 
+    /**
+     * @dev Checks if a given address is the reporter.
+     * @param user The address to check.
+     * @return bool true if the given address is the reporter, false otherwise.
+     */
     function isReporter(address user) public view returns (bool) {
         return user == reporter;
     }
 
+    /**
+     * @dev Internal function to update the value for a given id. Emits a ValueUpdate event.
+     * @param id The id for the value to update.
+     * @param value The new value.
+     * @param timestamp The timestamp of the new value.
+     */
     function _updateValue(
         bytes32 id,
         uint128 value,
@@ -60,6 +106,10 @@ contract OracleGasOptimized {
         emit ValueUpdate(id, value, timestamp);
     }
 
+    /**
+     * @dev Updates the reporter. Only the current reporter can call this function.
+     * @param newReporter The new reporter.
+     */
     function updateReporter(address newReporter) public {
         require(msg.sender == reporter);
         reporter = newReporter;
