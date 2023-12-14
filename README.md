@@ -1,5 +1,9 @@
 # oracle.vechain.energy
 
+This project helps you create and operate oracle services on Vechain.
+
+It includes smart contracts for storing data on-chain and a backend that updates this on-chain data. The oracle service can be customized to support various data sources and multiple feeds. It also offers a public API to get the most recent data from sources, even if it hasn't been stored on-chain yet.
+
 ## Components
 
 * [**contracts/**](./contracts/) contains contracts to manage the on-chain-storage.
@@ -12,26 +16,6 @@
      * as pure information for processing
      * and signed for verification in contracts
 * [**example-consumers/**](./example-consumers/) contains sample snippets accessing the feed data
-
-```mermaid
-C4Dynamic
-    Container(Consumer, "Consumer", "Contract on Vechain")
-    ContainerDb(OracleContract, "Oracle Contract", "Data Storage")
-
-    Container(OracleReporter, "Oracle Reporter", "Aggregator on Cloudflare")
-    Component(DataSources, "Public APIs with verified value")
-
-    Rel(OracleReporter, OracleContract, "updates", "updateValue(feedId, value, timestamp)")
-    Rel(Consumer, OracleContract, "reads", "getLatestValue(feedId)")
-    Rel(OracleReporter, DataSources, "reads", "values")
-    Rel_Back(DataSources, OracleReporter, "provides", "values")
-
-
-    UpdateRelStyle(OracleReporter, DataSources, $offsetX="-80", $offsetY="00")
-    UpdateRelStyle(DataSources, OracleReporter, $offsetX="20", $offsetY="00")
-
-    UpdateLayoutConfig($c4ShapeInRow="1", $c4BoundaryInRow="1")
-```
 
 
 ## Processing Sequences
