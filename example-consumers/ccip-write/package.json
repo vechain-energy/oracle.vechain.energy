@@ -1,0 +1,12 @@
+{
+    "name": "ccip",
+    "packageManager": "yarn@3.6.1",
+    "dependencies": {
+        "@vechain/connex": "^2.1.0",
+        "@vechain/connex-driver": "^2.1.0",
+        "@vechain/connex-framework": "^2.1.0",
+        "@vechain/web3-providers-connex": "^1.1.2",
+        "ethers": "^6.9.0",
+        "thor-devkit": "^2.0.9"
+    }
+}
