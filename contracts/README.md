@@ -70,7 +70,7 @@ This contract is designed to be upgradable and uses roles for access control.
 **Roles Defined**
 
 1. DEFAULT_ADMIN_ROLE: This role can grant and revoke any role.
-2. UPGRADE_ROLE: This role is responsible for authorizing contract upgrades.
+2. UPGRADER_ROLE: This role is responsible for authorizing contract upgrades.
 3. REPORTER_ROLE: This role can set new data values.
 
 **Data Storage & Retrieval**
