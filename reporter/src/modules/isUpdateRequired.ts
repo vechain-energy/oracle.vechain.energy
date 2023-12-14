@@ -1,4 +1,4 @@
-import { Oracle } from "../constants/Contract";
+import { OracleV1 } from "../constants/Contract";
 import type { FeedConfig } from "../types";
 import { ethers } from 'ethers'
 
@@ -13,7 +13,7 @@ export default async function isUpdateRequired(config: FeedConfig, newValue: big
                 clauses: [
                     {
                         to: config.contract.address,
-                        data: Oracle.encodeFunctionData(
+                        data: OracleV1.encodeFunctionData(
                             "getLatestValue",
                             [ethers.encodeBytes32String(config.id)]
                         ),
@@ -30,7 +30,7 @@ export default async function isUpdateRequired(config: FeedConfig, newValue: big
     if (response[0].reverted) { return true }
 
 
-    const { value, updatedAt } = Oracle.decodeFunctionResult(
+    const { value, updatedAt } = OracleV1.decodeFunctionResult(
         "getLatestValue",
         response[0].data
     ) as unknown as { value: bigint, updatedAt: bigint };

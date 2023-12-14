@@ -1,7 +1,7 @@
 import isUpdateRequired from './isUpdateRequired'
 import type { FeedConfig, Report } from '../types'
 import { ethers } from 'ethers'
-import { Oracle } from '../constants/Contract'
+import { OracleV1 } from '../constants/Contract'
 
 
 describe('isUpdateRequired(config, value)', () => {
@@ -34,7 +34,7 @@ describe('isUpdateRequired(config, value)', () => {
                 clauses: [
                     {
                         to: config.contract.address,
-                        data: Oracle.encodeFunctionData("getLatestValue", [
+                        data: OracleV1.encodeFunctionData("getLatestValue", [
                             ethers.encodeBytes32String(config.id),
                         ]),
                     },
@@ -48,7 +48,7 @@ describe('isUpdateRequired(config, value)', () => {
 
         const value = 100
         const timestamp = 200
-        const data = Oracle.encodeFunctionResult('getLatestValue', [value, timestamp])
+        const data = OracleV1.encodeFunctionResult('getLatestValue', [value, timestamp])
         const mockResponse = {
             json: jest.fn().mockResolvedValue({})
         }
@@ -63,7 +63,7 @@ describe('isUpdateRequired(config, value)', () => {
 
         const value = 100
         const timestamp = 200
-        const data = Oracle.encodeFunctionResult('getLatestValue', [value, timestamp])
+        const data = OracleV1.encodeFunctionResult('getLatestValue', [value, timestamp])
         const mockResponse = {
             json: jest.fn().mockResolvedValue([{ data, reverted: true }])
         }
@@ -82,7 +82,7 @@ describe('isUpdateRequired(config, value)', () => {
 
             const value = 100
             const timestamp = Math.floor(Date.now() / 1000) - config.heartbeat
-            const data = Oracle.encodeFunctionResult('getLatestValue', [value, timestamp])
+            const data = OracleV1.encodeFunctionResult('getLatestValue', [value, timestamp])
             const mockResponse = {
                 json: jest.fn().mockResolvedValue([{ data, reverted: false }])
             }
@@ -99,7 +99,7 @@ describe('isUpdateRequired(config, value)', () => {
 
             const value = 100
             const timestamp = Math.floor(Date.now() / 1000) - config.heartbeat + 1
-            const data = Oracle.encodeFunctionResult('getLatestValue', [value, timestamp])
+            const data = OracleV1.encodeFunctionResult('getLatestValue', [value, timestamp])
             const mockResponse = {
                 json: jest.fn().mockResolvedValue([{ data, reverted: false }])
             }
@@ -119,7 +119,7 @@ describe('isUpdateRequired(config, value)', () => {
             const value = 100000000
             const newValue = (value / 100 / 100) /* equals one point *) */ * config.deviationPoints
             const timestamp = Math.floor(Date.now() / 1000)
-            const data = Oracle.encodeFunctionResult('getLatestValue', [value, timestamp])
+            const data = OracleV1.encodeFunctionResult('getLatestValue', [value, timestamp])
             const mockResponse = {
                 json: jest.fn().mockResolvedValue([{ data, reverted: false }])
             }
@@ -137,7 +137,7 @@ describe('isUpdateRequired(config, value)', () => {
             const value = 100000000
             const newValue = value * 0.991
             const timestamp = Math.floor(Date.now() / 1000)
-            const data = Oracle.encodeFunctionResult('getLatestValue', [value, timestamp])
+            const data = OracleV1.encodeFunctionResult('getLatestValue', [value, timestamp])
             const mockResponse = {
                 json: jest.fn().mockResolvedValue([{ data, reverted: false }])
             }

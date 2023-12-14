@@ -20,7 +20,8 @@
         "deploy": "node scripts/deploy-contract.js",
         "deploy:proxy": "node scripts/deploy-proxy.js",
         "deploy:upgrade": "node scripts/deploy-upgrade.js",
-        "call": "node scripts/contract-call.js"
+        "call": "node scripts/contract-call.js",
+        "gen:interface": "hardhat compile; cat ./artifacts/contracts/OracleGasOptimized.sol/OracleGasOptimized.json | jq .abi | npx abi-to-sol IVechainEnergyOracleV1 --no-source --license=MIT > contracts/IVechainEnergyOracleV1.sol"
     },
     "dependencies": {
         "@openzeppelin/contracts-upgradeable": "^4.7.3",

@@ -1,4 +1,4 @@
-import { type Env, type FeedConfig, type Report, type Status, CcipRequestSchema, FeedConfigSchema, ReportSchema, CcipRequest, StatusSchema } from './types'
+import { type Env, type FeedConfig, type Report, type Status, CcipRequestSchema, FeedConfigSchema, CcipRequest } from './types'
 import { z } from 'zod'
 import publishReport from './modules/publishReport';
 import fetchDataSources from './modules/fetchDataSources';
@@ -202,6 +202,7 @@ export class ValueReporter {
     if (request.headers.get('x-api-key') !== this.env.API_KEY) {
       return jsonResponse({ message: 'Access Denied' }, 403)
     }
+    await this.storage.deleteAlarm()
     await this.storage.deleteAll()
     return jsonResponse({ success: true })
   }
@@ -220,7 +221,7 @@ export class ValueReporter {
     }
 
     const report = { id: config.id, value: latestValue.value, updatedAt: Number(latestValue.updatedAt) }
-    const data = await signCcipRequest({ request, config, report, env: this.env })
+    const data = signCcipRequest({ request, config, report, env: this.env })
     return jsonResponse({ data })
 
   }
