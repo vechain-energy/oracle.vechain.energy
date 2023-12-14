@@ -21,39 +21,51 @@ export class ValueReporter {
   async fetch(request: Request) {
     try {
       const url = new URL(request.url)
+
+      // The pathname is split into /{feedId}/{feature}/* for routing.
       const [, feature] = url.pathname.slice(1).split('/')
       console.log(request.method, url.pathname)
 
-      if (request.method === 'DELETE') {
-        return this.handleDeleteFeedConfig(request)
+      // POST /{feedId} – Upsert the feed configuration
+      if (request.method === 'POST') {
+        const body = await request.json()
+        return this.requireApiKey(request, () => this.handleUpdateFeedConfig(FeedConfigSchema.parse(body)))
       }
 
+      // GET /{feedId} – Get a status of the current feed
+      if (request.method === 'GET') {
+        return this.handleStatusRequest()
+      }
+
+      // DELETE /{feedId} – Delete current feed configuration
+      if (request.method === 'DELETE') {
+        return this.requireApiKey(request, () => this.handleDeleteFeedConfig())
+      }
+
+      // GET /{feedId}/signed – Handle a simplified CCIP request with sender={sender}&data={callData}
       if (feature === 'signed' && request.method === 'GET') {
         return this.handleCcipRequest(CcipRequestSchema.parse({ sender: url.searchParams.get('sender'), callData: url.searchParams.get('data') }))
       }
 
+      // POST /{feedId}/signed – Handle a full CCIP request the full request in the post body
+      // If the feature is 'signed' and the request method is POST, handle the CCIP request
       if (feature === 'signed' && request.method === 'POST') {
         const body = await request.json()
         return this.handleCcipRequest(CcipRequestSchema.parse(body))
       }
 
-      if (request.method === 'GET') {
-        return this.handleStatusRequest()
-      }
-
-      if (request.method === 'POST') {
-        const body = await request.json()
-        return this.handleUpdateFeedConfig(request, FeedConfigSchema.parse(body))
-      }
-
+      // everything else is an error
       return jsonResponse({ success: false, message: 'Invalid request' }, 500);
 
     }
     catch (err) {
+
+      // Errors are replied in a uniform way for machine processing
       if (err instanceof z.ZodError) {
         console.log(err.issues)
         return jsonResponse({ success: false, message: err.message }, 500)
       }
+
       console.log(err)
       return jsonResponse({ success: false, message: 'Internal Error' }, 500)
     }
@@ -168,9 +180,22 @@ export class ValueReporter {
     }
     catch (err) {
       const errorMessage = err instanceof Error ? String(err.message) : String(err)
-      console.log(err, errorMessage)
       return jsonResponse({ success: false, message: errorMessage ? errorMessage : 'feed not found' }, 404)
     }
+  }
+
+  /**
+   * Checks if the request has a valid API key and then executes the callback function
+   * @param {Request} request - The request object
+   * @param {() => Promise<Response>} callback - The callback function to execute if the API key is valid
+   * @returns {Promise<Response>} JSON Response
+   */
+  async requireApiKey(request: Request, callback: () => Promise<Response>): Promise<Response> {
+    if (request.headers.get('x-api-key') !== this.env.API_KEY) {
+      return jsonResponse({ message: 'Access Denied' }, 403)
+    }
+
+    return await callback()
   }
 
   /**
@@ -179,11 +204,7 @@ export class ValueReporter {
    * @param {FeedConfig} config - The feed configuration object
    * @returns {Promise<Response>} JSON Response
    */
-  async handleUpdateFeedConfig(request: Request, config: FeedConfig): Promise<Response> {
-    if (request.headers.get('x-api-key') !== this.env.API_KEY) {
-      return jsonResponse({ message: 'Access Denied' }, 403)
-    }
-
+  async handleUpdateFeedConfig(config: FeedConfig): Promise<Response> {
     this.config = config
     await this.storage.deleteAlarm()
     await this.storage.deleteAll()
@@ -198,10 +219,7 @@ export class ValueReporter {
    * @param {Request} request - The request object
    * @returns {Promise<Response>} JSON Response
    */
-  async handleDeleteFeedConfig(request: Request): Promise<Response> {
-    if (request.headers.get('x-api-key') !== this.env.API_KEY) {
-      return jsonResponse({ message: 'Access Denied' }, 403)
-    }
+  async handleDeleteFeedConfig(): Promise<Response> {
     await this.storage.deleteAlarm()
     await this.storage.deleteAll()
     return jsonResponse({ success: true })
@@ -241,12 +259,11 @@ function jsonResponse(body: any, statusCode = 200): Response {
       typeof value === 'bigint'
         ? value.toString()
         : value
-    )
-    , {
-      status: statusCode,
-      headers: {
-        "content-type": "application/json",
-        "access-control-allow-origin": "*"
-      }
-    })
+    ), {
+    status: statusCode,
+    headers: {
+      "content-type": "application/json",
+      "access-control-allow-origin": "*"
+    }
+  })
 }
