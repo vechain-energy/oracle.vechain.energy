@@ -110,15 +110,6 @@ contract OracleUpgradeable is
     }
 
     /**
-     * @dev Function to check if a given address is the reporter
-     * @param user The address to check
-     * @return bool true if the given address is the reporter, false otherwise
-     */
-    function isReporter(address user) public view returns (bool) {
-        return hasRole(REPORTER_ROLE, user);
-    }
-
-    /**
      * @dev Internal function to update the value for a given id. Emits a ValueUpdate event.
      * @param id The id for the value to update
      * @param newValue The new value
@@ -131,6 +122,15 @@ contract OracleUpgradeable is
     ) internal {
         tokenOracles[id] = FeedValue(newValue, newTimestamp);
         emit ValueUpdate(id, newValue, newTimestamp);
+    }
+
+    /**
+     * @dev Function to check if a given address is the reporter
+     * @param user The address to check
+     * @return bool true if the given address is the reporter, false otherwise
+     */
+    function isReporter(address user) public view returns (bool) {
+        return hasRole(REPORTER_ROLE, user);
     }
 
     /**

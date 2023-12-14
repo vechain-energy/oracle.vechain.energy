@@ -83,15 +83,6 @@ contract OracleGasOptimized {
     }
 
     /**
-     * @dev Checks if a given address is the reporter.
-     * @param user The address to check.
-     * @return bool true if the given address is the reporter, false otherwise.
-     */
-    function isReporter(address user) public view returns (bool) {
-        return user == reporter;
-    }
-
-    /**
      * @dev Internal function to update the value for a given id. Emits a ValueUpdate event.
      * @param id The id for the value to update.
      * @param value The new value.
@@ -114,5 +105,14 @@ contract OracleGasOptimized {
         require(msg.sender == reporter);
         reporter = newReporter;
         emit ReporterUpdate(newReporter);
+    }
+
+    /**
+     * @dev Checks if a given address is the reporter.
+     * @param user The address to check.
+     * @return bool true if the given address is the reporter, false otherwise.
+     */
+    function isReporter(address user) public view returns (bool) {
+        return user == reporter;
     }
 }
