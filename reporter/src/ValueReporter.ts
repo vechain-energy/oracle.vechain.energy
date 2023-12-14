@@ -202,6 +202,7 @@ export class ValueReporter {
     if (request.headers.get('x-api-key') !== this.env.API_KEY) {
       return jsonResponse({ message: 'Access Denied' }, 403)
     }
+    await this.storage.deleteAlarm()
     await this.storage.deleteAll()
     return jsonResponse({ success: true })
   }
