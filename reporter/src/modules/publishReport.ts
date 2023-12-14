@@ -1,12 +1,12 @@
 import type { FeedConfig, Report, Env } from '../types'
 import { ethers } from 'ethers'
-import { Oracle } from '../constants/Contract'
+import { OracleV1 } from '../constants/Contract'
 
 export default async function publishReport({ config, report, env }: { config: FeedConfig, report: Report, env?: Env }): Promise<string> {
     const clauses = [
         {
             to: config.contract.address,
-            data: Oracle.encodeFunctionData('updateValue', [ethers.encodeBytes32String(report.id), report.value, report.updatedAt])
+            data: OracleV1.encodeFunctionData('updateValue', [ethers.encodeBytes32String(report.id), report.value, report.updatedAt])
         }
     ]
 

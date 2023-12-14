@@ -1,5 +1,5 @@
 import type { FeedConfig, Report, CcipRequest } from '../types'
-import { decodeBytes32String, ethers } from 'ethers';
+import { encodeBytes32String, decodeBytes32String, ethers } from 'ethers';
 
 export default function signCcipRequest({ request, config, report, env }: { request: CcipRequest, config: FeedConfig, report: Report, env?: { PRIVATE_KEY: string } }): string {
     // verify request data
@@ -8,7 +8,7 @@ export default function signCcipRequest({ request, config, report, env }: { requ
 
     // encode a response that is valid until the next heartbeat
     const validUntil = Math.floor(Date.now() / 1000 + config.heartbeat)
-    const encodedResponse = ethers.AbiCoder.defaultAbiCoder().encode(['uint128', 'uint128'], [report.value, report.updatedAt])
+    const encodedResponse = ethers.AbiCoder.defaultAbiCoder().encode(['uint128', 'uint128', 'bytes32'], [report.value, report.updatedAt, encodeBytes32String(report.id)])
 
     // message for the requestee
     const messageHash = ethers.solidityPackedKeccak256(

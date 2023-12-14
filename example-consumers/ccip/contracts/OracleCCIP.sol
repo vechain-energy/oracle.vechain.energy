@@ -3,8 +3,14 @@ pragma solidity ^0.8.19;
 
 import "./utils/SignatureVerifier.sol";
 
+interface VechainEnergyOracleV1 {
+    function isReporter(address user) external view returns (bool);
+}
+
 contract OracleCCIP {
-    address oracleSigner = 0x56cB0E0276AD689Cc68954D47460cD70f46244DC;
+    VechainEnergyOracleV1 Oracle =
+        VechainEnergyOracleV1(0x12E3582D7ca22234f39D2A7BE12C98ea9c077E25);
+
     string oracleUrl = "http://localhost:8787/vet-usd/signed";
 
     error InvalidOperation();
@@ -42,8 +48,10 @@ contract OracleCCIP {
             extraData,
             response
         );
-        require(signer == oracleSigner, "SignatureVerifier: Invalid sigature");
-        (value, updatedAt) = abi.decode(result, (uint128, uint128));
-        feedId = bytes32(extraData);
+        require(Oracle.isReporter(signer), "Oracle: Invalid signature");
+        (value, updatedAt, feedId) = abi.decode(
+            result,
+            (uint128, uint128, bytes32)
+        );
     }
 }

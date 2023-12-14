@@ -560,6 +560,7 @@ __metadata:
     "@vechain/connex-framework": ^2.1.0
     "@vechain/web3-providers-connex": ^1.1.2
     ethers: ^6.9.0
+    thor-devkit: ^2.0.9
   languageName: unknown
   linkType: soft
 
@@ -806,7 +807,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"thor-devkit@npm:^2.0.4, thor-devkit@npm:^2.0.5":
+"thor-devkit@npm:^2.0.4, thor-devkit@npm:^2.0.5, thor-devkit@npm:^2.0.9":
   version: 2.0.9
   resolution: "thor-devkit@npm:2.0.9"
   dependencies:

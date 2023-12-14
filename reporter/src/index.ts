@@ -1,8 +1,6 @@
 export { ValueReporter } from "./ValueReporter"
 import { Env } from './types'
 
-const publicMethods = ['GET']
-
 export default {
 	async fetch(request: Request, env: Env): Promise<Response> {
 		if (request.method === 'OPTIONS') {

@@ -1,4 +1,4 @@
-import { type Env, type FeedConfig, type Report, type Status, CcipRequestSchema, FeedConfigSchema, ReportSchema, CcipRequest, StatusSchema } from './types'
+import { type Env, type FeedConfig, type Report, type Status, CcipRequestSchema, FeedConfigSchema, CcipRequest } from './types'
 import { z } from 'zod'
 import publishReport from './modules/publishReport';
 import fetchDataSources from './modules/fetchDataSources';

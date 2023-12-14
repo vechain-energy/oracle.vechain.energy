@@ -1,7 +1,7 @@
 import publishReport from './publishReport'
 import type { FeedConfig, Report } from '../types'
 import { ethers } from 'ethers'
-import { Oracle } from '../constants/Contract'
+import { OracleV1 } from '../constants/Contract'
 
 
 describe('publishReport({ config, report, env })', () => {
@@ -35,7 +35,7 @@ describe('publishReport({ config, report, env })', () => {
         const clauses = [
             {
                 to: task.contract.address,
-                data: Oracle.encodeFunctionData('updateValue', [ethers.encodeBytes32String(report.id), report.value, report.updatedAt])
+                data: OracleV1.encodeFunctionData('updateValue', [ethers.encodeBytes32String(report.id), report.value, report.updatedAt])
             }
         ]
 

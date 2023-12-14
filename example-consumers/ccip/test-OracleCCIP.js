@@ -9,9 +9,9 @@ if (!contractAddress) {
 }
 
 const ccipContract = new Interface([
-    'function usdPriceVet() external view',
+    'function usdPriceVet()',
     'error OffchainLookup(address sender, string[] urls, bytes callData, bytes4 callbackFunction, bytes extraData)',
-    'function usdPriceVetWithProof(bytes calldata response, bytes calldata extraData) public view returns (uint128 value, uint128 updatedAt, bytes feedId)'
+    'function usdPriceVetWithProof(bytes calldata response, bytes calldata extraData) returns (uint128 value, uint128 updatedAt, bytes feedId)'
 ])
 
 async function main() {
@@ -48,10 +48,10 @@ async function main() {
                     console.log('fetching response from', url)
                     const queryUrl = url.replace(/\{([^}]*)\}/g, (match, p1) => backendArgs[p1]);
                     if (url.includes('{data}')) {
-                        console.log(`${url}`.replace('{sender}', backendArgs.sender).replace('{data}', backendArgs.data))
+                        console.log('GET', `${url}`.replace('{sender}', backendArgs.sender).replace('{data}', backendArgs.data))
                         return await fetch(queryUrl)
                     } else {
-                        console.log(backendArgs)
+                        console.log('POST', queryUrl, backendArgs)
                         return await fetch(`${queryUrl}`, {
                             method: 'POST',
                             headers: {
@@ -105,7 +105,7 @@ async function main() {
                     throw new Error(result.revertReason)
                 }
 
-                console.log('Current data is', ethers.formatUnits(result.decoded.value, 12), 'updated at', (new Date(Number(result.decoded.updatedAt) * 1000).toISOString()), result.decoded.feedId)
+                console.log('Current data is', ethers.formatUnits(result.decoded.value, 12), 'updated at', (new Date(Number(result.decoded.updatedAt) * 1000).toISOString()), 'for feed', ethers.decodeBytes32String(result.decoded.feedId))
             }
         }
     }
