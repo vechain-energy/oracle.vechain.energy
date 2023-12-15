@@ -93,9 +93,9 @@ paths:
       security:
         - authorization: []
 
-  /{feedId}/signed?sender={sender}&data={data}:
+  /{feedId}/resolver?sender={sender}&data={data}:
     get:
-      summary: get a signed response of the latest values
+      summary: get a signed response of the latest values (CCIP Resolver)
       description: "the response is an encoded (uint128 value, uint128 updatedAt, bytes32 feedId) abi encoded within (bytes response, uint64 validUntil, bytes signature). data can be passed on its signature proofs that it was signed by the oracles reporter."
       parameters:
         - in: path
@@ -140,7 +140,7 @@ paths:
                 schema:
                     $ref: '#/components/schemas/ResponseError'
 
-  /{feedId}/signed:
+  /{feedId}/resolver:
     post:
       summary: get a signed response of the latest values
       description: "the response is an encoded representation of latestValue(feedId) abi encoded with (bytes response, uint64 validUntil, bytes signature). data can be passed on its signature proofs that it was signed by the oracles reporter."

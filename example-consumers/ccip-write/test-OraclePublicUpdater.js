@@ -18,7 +18,7 @@ async function main() {
     const connex = new Framework(driver)
 
     // fetch signed data, signed for the contracts address
-    const url = `http://localhost:8787/vet-usd/signed?sender=${contractAddress}&data=${ethers.encodeBytes32String('vet-usd')}`
+    const url = `http://localhost:8787/vet-usd/resolver?sender=${contractAddress}&data=${ethers.encodeBytes32String('vet-usd')}`
     console.log('fetching signed response from', url)
     const { data } = await (await fetch(url)).json()
     const clauses = [{

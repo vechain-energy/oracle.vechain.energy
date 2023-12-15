@@ -23,7 +23,7 @@ contract OracleCCIP {
     /**
      * @dev URL of the oracle
      */
-    string oracleUrl = "http://localhost:8787/vet-usd/signed";
+    string oracleUrl = "http://localhost:8787/vet-usd/resolver";
 
     /**
      * @dev Error thrown for invalid operations

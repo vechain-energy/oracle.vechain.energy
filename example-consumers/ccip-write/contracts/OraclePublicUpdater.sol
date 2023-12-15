@@ -8,7 +8,7 @@ import "./utils/SignatureVerifier.sol";
  * the Oracle will ensure that only correct and newer data is stored
  *
  * fetch a signed response from:
- * http://localhost:8787/vet-usd/signed?sender=<OraclePublicUpdater_Address>&data=<feedId as bytes32>
+ * http://localhost:8787/vet-usd/resolver?sender=<OraclePublicUpdater_Address>&data=<feedId as bytes32>
  * (vet-usd in bytes32 is 0x7665742d75736400000000000000000000000000000000000000000000000000)
  *
  * use the data response and pass it to updateFeedWithProof(data, 0x)
@@ -58,7 +58,7 @@ contract OraclePublicUpdater {
         IVechainEnergyOracleV1(0x12E3582D7ca22234f39D2A7BE12C98ea9c077E25);
 
     /**
-     * @dev With the signed response from `/feed-id/signed`
+     * @dev With the signed response from `/feed-id/resolver`
      * the feed can be updated by anyone who volunteers to pay the gas fees
      * @param response The signed response
      * @param extraData Extra data
