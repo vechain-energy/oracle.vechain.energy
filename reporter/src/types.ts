@@ -33,13 +33,15 @@ export type CcipRequest = z.infer<typeof CcipRequestSchema>;
 
 export const StatusSchema = z.object({
   healthy: z.boolean(),
-  interval: z.number(),
-  heartbeat: z.number(),
-  deviationPoints: z.number(),
   nextUpdate: z.number().nullable(),
+  config: z.object({
+    interval: z.number(),
+    heartbeat: z.number(),
+    deviationPoints: z.number()
+  }),
   latestValue: ReportSchema.extend({
     formattedValue: z.string(),
-  }).optional(),
+  }).optional()
 });
 
 export interface Env {

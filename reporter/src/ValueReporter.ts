@@ -98,17 +98,18 @@ export class ValueReporter {
     const config = await this.getFeedConfig();
 
     console.log(config.id, 'updating values')
-    const newValue = await fetchDataSources(config)
-
+    const data = await fetchDataSources(config)
+    
     const report = {
       id: config.id,
-      value: newValue,
-      updatedAt: Math.floor(Date.now() / 1000)
+      updatedAt: Math.floor(Date.now() / 1000),
+      value: data.value
     }
     await this.storage.put('latestValue', report)
     console.log(config.id, 'last value:', report.value, 'updatedAt', report.updatedAt)
+    console.log(config.id, 'calculation basics', data)
 
-    const shouldUpdate = await isUpdateRequired(config, newValue)
+    const shouldUpdate = await isUpdateRequired(config, data.value)
     if (shouldUpdate) {
       console.log(config.id, '**updating**')
       const updatedDetails = await publishReport({ config, report, env: this.env })
@@ -164,11 +165,13 @@ export class ValueReporter {
       const healthy = !latestValue?.value ? false : !await isUpdateRequired(config, latestValue.value)
       const status = <Status>{
         id: config.id,
-        healthy,
-        interval: config.interval,
-        heartbeat: config.heartbeat,
-        deviationPoints: config.deviationPoints,
         nextUpdate,
+        healthy,
+        config: {
+          interval: config.interval,
+          heartbeat: config.heartbeat,
+          deviationPoints: config.deviationPoints,
+        },
         latestValue: latestValue
           ? {
             ...latestValue,

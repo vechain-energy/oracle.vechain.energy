@@ -243,19 +243,22 @@ components:
            healthy:
              type: boolean
              example: true
-           heartbeat:
-             type: integer
-             example: 3600
-           deviationPoints:
-             type: integer
-             example: 100
-           interval:
-             type: integer
-             example: 60
            nextUpdate:
               type: integer
               example: 60
               optional: true
+           config:
+            type: object
+            properties:
+              heartbeat:
+                type: integer
+                example: 3600
+              deviationPoints:
+                type: integer
+                example: 100
+              interval:
+                type: integer
+                example: 60
            latestValue:
              type: object
              optional: true

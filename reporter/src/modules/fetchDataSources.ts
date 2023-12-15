@@ -4,7 +4,21 @@ import { ethers } from 'ethers'
 // single values that have a huge difference to the average will be ignored
 const IGNORE_OUTLIER_PERCENTAGE = 0.1
 
-export default async function fetchDataSources(config: FeedConfig): Promise<bigint> {
+type ValueResult = {
+    value: bigint
+    base: number[]
+    outliers: number[]
+    errors: number
+}
+
+export default async function fetchDataSources(config: FeedConfig): Promise<ValueResult> {
+    const result: ValueResult = {
+        value: 0n,
+        base: [],
+        outliers: [],
+        errors: 0
+    }
+
     const values = await Promise.all(
         config.sources
             .map(source =>
@@ -12,19 +26,29 @@ export default async function fetchDataSources(config: FeedConfig): Promise<bigi
                     .catch((err) => {
                         // null represents errored values
                         process.env.NODE_ENV !== 'test' && console.error(source.url, 'will be ignored', err)
+                        result.errors += 1
                         return null
                     })
             )
     )
+
     const validValues = values.filter(value => value !== null) as number[]
 
     const averageWithOutliers = validValues.reduce((a, b) => a + b, 0) / validValues.length;
-    const filteredValues = validValues.filter(value => Math.abs(value - averageWithOutliers) / averageWithOutliers <= IGNORE_OUTLIER_PERCENTAGE);
+    const filteredValues = validValues.filter(value => {
+        if (Math.abs(value - averageWithOutliers) / averageWithOutliers <= IGNORE_OUTLIER_PERCENTAGE) {
+            result.base.push(value)
+            return true
+        }
+        result.outliers.push(value)
+        return false
+    });
 
     const averageWithoutOutliers = filteredValues.reduce((a, b) => a + b, 0) / filteredValues.length;
     process.env.NODE_ENV !== 'test' && console.log('__fetched', averageWithoutOutliers, 'as average value')
 
-    return ethers.parseUnits(String(averageWithoutOutliers.toFixed(12)), 12)
+    result.value = ethers.parseUnits(String(averageWithoutOutliers.toFixed(12)), 12)
+    return result
 }
 
 export async function fetchDataSource({ url, path }: { url: string, path: string }): Promise<number> {
