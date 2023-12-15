@@ -26,39 +26,45 @@ export class ValueReporter {
       const [, feature] = url.pathname.slice(1).split('/')
       console.log(request.method, url.pathname)
 
-      // POST /{feedId} – Upsert the feed configuration
-      if (request.method === 'POST') {
-        const body = await request.json()
-        return this.requireApiKey(request, () => this.handleUpdateFeedConfig(FeedConfigSchema.parse(body)))
+      if (!feature) {
+
+        // POST /{feedId} – Upsert the feed configuration
+        if (request.method === 'POST') {
+          const body = await request.json()
+          return this.requireApiKey(request, () => this.handleUpdateFeedConfig(FeedConfigSchema.parse(body)))
+        }
+
+        // GET /{feedId} – Get a status of the current feed
+        if (request.method === 'GET') {
+          return request.headers.has('x-api-key')
+            ? this.requireApiKey(request, () => this.handleStatusRequest({ report: true }))
+            : this.handleStatusRequest()
+        }
+
+        // DELETE /{feedId} – Delete current feed configuration
+        if (request.method === 'DELETE') {
+          return this.requireApiKey(request, () => this.handleDeleteFeedConfig())
+        }
+
       }
 
-      // GET /{feedId} – Get a status of the current feed
-      if (request.method === 'GET') {
-        return request.headers.has('x-api-key')
-          ? this.requireApiKey(request, () => this.handleStatusRequest({ report: true }))
-          : this.handleStatusRequest()
-      }
+      else if (feature === 'resolver') {
 
-      // DELETE /{feedId} – Delete current feed configuration
-      if (request.method === 'DELETE') {
-        return this.requireApiKey(request, () => this.handleDeleteFeedConfig())
-      }
+        // GET /{feedId}/resolver – Handle a simplified CCIP request with sender={sender}&data={callData}
+        if (request.method === 'GET') {
+          return this.handleCcipRequest(CcipRequestSchema.parse({ sender: url.searchParams.get('sender'), callData: url.searchParams.get('data') }))
+        }
 
-      // GET /{feedId}/resolver – Handle a simplified CCIP request with sender={sender}&data={callData}
-      if (feature === 'resolver' && request.method === 'GET') {
-        return this.handleCcipRequest(CcipRequestSchema.parse({ sender: url.searchParams.get('sender'), callData: url.searchParams.get('data') }))
-      }
+        // POST /{feedId}/resolver – Handle a full CCIP request the full request in the post body
+        if (request.method === 'POST') {
+          const body = await request.json()
+          return this.handleCcipRequest(CcipRequestSchema.parse(body))
+        }
 
-      // POST /{feedId}/resolver – Handle a full CCIP request the full request in the post body
-      // If the feature is 'resolver' and the request method is POST, resolve the CCIP request
-      if (feature === 'resolver' && request.method === 'POST') {
-        const body = await request.json()
-        return this.handleCcipRequest(CcipRequestSchema.parse(body))
       }
 
       // everything else is an error
       return jsonResponse({ success: false, message: 'Invalid request' }, 500);
-
     }
     catch (err) {
 
