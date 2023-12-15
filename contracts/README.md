@@ -4,7 +4,7 @@ We offer two types of contracts. One is upgradable and uses OpenZeppelin's role 
 
 Both contracts have the same public interface:
 
-```sol
+```solidity
 interface IVechainEnergyOracleV1 {
     // emitted when data changes
     event ValueUpdate(bytes32 id, uint128 value, uint128 updatedAt);
@@ -28,13 +28,13 @@ interface IVechainEnergyOracleV1 {
 - Each data feed is identified by a unique bytes32 identifier.
 - Each feed stores the most recent value and the timestamp of the update, which can be accessed using the identifier.
 
-```sol
+```solidity
 function updateValue(bytes32 id, uint128 newValue, uint128 newTimestamp)
 ```
 
 - A view function is available to return the value and timestamp for further processing.
 
-```sol
+```solidity
 function getLatestValue(bytes32 id) public view returns (uint128 value, uint128 updatedAt)
 ```
 
@@ -79,13 +79,13 @@ This contract is designed to be upgradable and uses roles for access control.
 - Each feed stores the most recent value and the timestamp of the update, which can be accessed using the identifier.
 - Only users with the REPORTER_ROLE can update the data.
 
-```sol
+```solidity
 function updateValue(bytes32 id, uint256 newValue, uint64 newTimestamp)
 ```
 
 - A view function is available to return the value and timestamp for further processing.
 
-```sol
+```solidity
 function getLatestValue(bytes32 id) public view returns (uint256 value, uint64 updatedAt)
 ```
 
