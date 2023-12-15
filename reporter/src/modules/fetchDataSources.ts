@@ -4,8 +4,16 @@ import { ethers } from 'ethers'
 // single values that have a huge difference to the average will be ignored
 const IGNORE_OUTLIER_PERCENTAGE = 0.1
 
+type SourceValue = {
+    url: string
+    path: string
+    available: boolean
+    value: number
+}
+
 type ValueResult = {
     value: bigint
+    sources: SourceValue[]
     base: number[]
     outliers: number[]
     errors: number
@@ -14,6 +22,7 @@ type ValueResult = {
 export default async function fetchDataSources(config: FeedConfig): Promise<ValueResult> {
     const result: ValueResult = {
         value: 0n,
+        sources: [],
         base: [],
         outliers: [],
         errors: 0
@@ -23,9 +32,15 @@ export default async function fetchDataSources(config: FeedConfig): Promise<Valu
         config.sources
             .map(source =>
                 fetchDataSource(source)
+                    .then(value => {
+                        result.sources.push({ ...source, value, available: true })
+                        return value
+                    })
                     .catch((err) => {
                         // null represents errored values
                         process.env.NODE_ENV !== 'test' && console.error(source.url, 'will be ignored', err)
+
+                        result.sources.push({ ...source, value: 0, available: false })
                         result.errors += 1
                         return null
                     })

@@ -42,7 +42,7 @@ describe('fetchDataSources(config)', () => {
     })
 
 
-    it('returns bigint with 12 decimal representation (parseUnits(value, 12) / uint128)', async () => {
+    it('returns bigint with 12 decimal representation (parseUnits(value, 12) / uint128) in result.value', async () => {
         const config = getMockTask({
             sources: [{ url: 'https://postman-echo.com/get?key=102', path: '.test.key' }]
         })
@@ -70,7 +70,7 @@ describe('fetchDataSources(config)', () => {
         expect(String(result.value)).toEqual(String(ethers.parseUnits(String((103 + 106) / 2), 12)))
     })
 
-    it('counts errored sources in result', async () => {
+    it('counts errored sources in result.errors', async () => {
         const config = getMockTask({
             sources: [
                 { url: 'https://postman-echo.com/get?key=103', path: '.args.key' },
@@ -81,6 +81,23 @@ describe('fetchDataSources(config)', () => {
 
         const result = await fetchDataSources(config)
         expect(result.errors).toEqual(1)
+    })
+
+    it('returns a source success report in result.sources', async () => {
+        const sources = [
+            { url: 'https://postman-echo.com/get?key=103', path: '.args.key' },
+            { url: 'https://postman-echo.com/get?error=105', path: '.args.errored.key' },
+            { url: 'https://postman-echo.com/get?key=106', path: '.args.key' }
+        ]
+        const config = getMockTask({ sources })
+
+        const result = await fetchDataSources(config)
+        expect(result.sources).toHaveLength(sources.length)
+        expect(result.sources).toEqual(expect.arrayContaining([
+            { ...sources[0], available: true, value: 103 },
+            { ...sources[1], available: false, value: 0 },
+            { ...sources[2], available: true, value: 106 },
+        ]))
     })
 
     it('ignores sources that are have a 10% difference to the others', async () => {
@@ -97,7 +114,7 @@ describe('fetchDataSources(config)', () => {
     })
 
 
-    it('returns outlier values in result', async () => {
+    it('returns outlier values in result.outliers', async () => {
         const config = getMockTask({
             sources: [
                 { url: 'https://postman-echo.com/get?key=101', path: '.args.key' },
@@ -110,7 +127,7 @@ describe('fetchDataSources(config)', () => {
         expect(result.outliers).toEqual([120])
     })
 
-    it('returns average based values in result', async () => {
+    it('returns values used to calculate the average in result.base', async () => {
         const config = getMockTask({
             sources: [
                 { url: 'https://postman-echo.com/get?key=101', path: '.args.key' },
