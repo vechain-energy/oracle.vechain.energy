@@ -79,22 +79,22 @@ First, deploy an Oracle-Contract from the [contracts](./contracts) directory.
 
 ```shell
 # get a vechain.energy API-Key that can interact with everyone
-$ VEN_API_KEY=""
+VEN_API_KEY=""
 
 # generate a new private key
-$ PRIVATE_KEY="0x`openssl rand -hex 32`"
+PRIVATE_KEY="0x`openssl rand -hex 32`"
 
 # generate an api key protecting your backend
-$ API_KEY=`openssl rand -hex 32`
+API_KEY=`openssl rand -hex 32`
 
 # deploy gas optimized contract
-$ cd contracts
-$ yarn install
-$ yarn build
+cd contracts
+yarn install
+yarn build
 Compiled 22 Solidity files successfully (evm target: paris).
 
 # deployer & reporter is the PRIVATE_KEY
-$ PRIVATE_KEY="$PRIVATE_KEY" NETWORK=vechain yarn deploy OracleGasOptimized
+PRIVATE_KEY="$PRIVATE_KEY" NETWORK=vechain yarn deploy OracleGasOptimized
 
 Deploying to **TEST** network
 
@@ -102,40 +102,40 @@ Deploying to **TEST** network
 ℹ [OracleGasOptimized] Transaction Id: 0x18d4c4b0b4fc5a5dffd664a98c1ccbd03271badab84e157862e25ea61d95cd9e
 ✔ [OracleGasOptimized] Contract is now available at 0xf50d68918b8A63d113c6c329A893F6e9d3a4Bb30
 
-
-$ ORACLE_ADDRESS=`cat outputs/test/OracleGasOptimized.json | jq -r .address`
-$ cd ..
+# store oracle address in an environment variable
+ORACLE_ADDRESS=`cat outputs/test/OracleGasOptimized.json | jq -r .address`
+cd ..
 
 # run a local development instance of the reporter
-$ cd reporter
+cd reporter
 
 # configure secret vars for local environment
-$ echo "PRIVATE_KEY=$PRIVATE_KEY" > .dev.vars
-$ echo "API_KEY=$API_KEY" >> .dev.vars
-$ echo "VEN_API_KEY=$VEN_API_KEY" >>  .dev.vars
+echo "PRIVATE_KEY=$PRIVATE_KEY" > .dev.vars
+echo "API_KEY=$API_KEY" >> .dev.vars
+echo "VEN_API_KEY=$VEN_API_KEY" >>  .dev.vars
 
 # install dependencies
-$ yarn install
-$ cd ..
+yarn install
+cd ..
 
 # store environment variables for later
-$ echo "PRIVATE_KEY=$PRIVATE_KEY" > .env
-$ echo "API_KEY=$API_KEY" >> .env
-$ echo "VEN_API_KEY=$VEN_API_KEY" >>  .env
-$ echo "ORACLE_ADDRESS=$ORACLE_ADDRESS" >>  .env
+echo "PRIVATE_KEY=$PRIVATE_KEY" > .env
+echo "API_KEY=$API_KEY" >> .env
+echo "VEN_API_KEY=$VEN_API_KEY" >>  .env
+echo "ORACLE_ADDRESS=$ORACLE_ADDRESS" >>  .env
 
-# restore environment variables in the future
-$ set -o allexport; source .env; set +o allexport
+# the following command can restore the environment from .env file in the future:
+set -o allexport; source .env; set +o allexport
 ```
 
 
 Open second terminal to run the backend:
 ```shell
-$ cd reporter
+cd reporter
 
 # run dev environment
 # https://developers.cloudflare.com/workers/wrangler/install-and-update/
-$ wrangler dev
+wrangler dev
  ⛅️ wrangler 3.19.0
 -------------------------------------------------------
 Using vars defined in .dev.vars
@@ -155,7 +155,7 @@ Continue in first terminal with environment variables:
 
 ```shell
 # setup data feed
-$ curl -XPOST http://localhost:8787/vet-usd \
+curl -XPOST http://localhost:8787/vet-usd \
 -H "X-API-Key: ${API_KEY}" \
 -d '
 {
@@ -175,7 +175,9 @@ $ curl -XPOST http://localhost:8787/vet-usd \
     }
 }
 '
+```
 
+```json
 {"success":true,"id":"vet-usd"}
 ```
 
@@ -224,10 +226,10 @@ vet-usd not updating
 vet-usd sleeping till 2023-12-14T12:50:27.491Z
 ```
 
-check value:
+**Check the contract on the Blockchain**
+
 ```shell
-# Check the contract on the Blockchain
-$ curl -s -XPOST "https://api.vechain.energy/v1/call/test" \
+curl -s -XPOST "https://api.vechain.energy/v1/call/test" \
 -H "content-type: application/json" \
 -d '
 {
@@ -240,6 +242,9 @@ $ curl -s -XPOST "https://api.vechain.energy/v1/call/test" \
   "encodeBytes": true
 }
 ' | jq
+```
+
+```json
 {
   "0": "30610244364",
   "1": "1702558104",
@@ -247,9 +252,15 @@ $ curl -s -XPOST "https://api.vechain.energy/v1/call/test" \
   "value": "30610244364",
   "timestamp": "1702558104"
 }
+```
 
-# Check the Reporter status
-$ curl -s http://localhost:8787/vet-usd | jq
+**Check the Reporter status**
+
+```shell
+curl -s http://localhost:8787/vet-usd | jq
+```
+
+```json
 {
   "id": "vet-usd",
   "interval": 60,
