@@ -34,7 +34,9 @@ export class ValueReporter {
 
       // GET /{feedId} – Get a status of the current feed
       if (request.method === 'GET') {
-        return this.handleStatusRequest()
+        return request.headers.has('x-api-key')
+          ? this.requireApiKey(request, () => this.handleStatusRequest({ report: true }))
+          : this.handleStatusRequest()
       }
 
       // DELETE /{feedId} – Delete current feed configuration
@@ -99,7 +101,7 @@ export class ValueReporter {
 
     console.log(config.id, 'updating values')
     const data = await fetchDataSources(config)
-    
+
     const report = {
       id: config.id,
       updatedAt: Math.floor(Date.now() / 1000),
@@ -156,7 +158,7 @@ export class ValueReporter {
    * generate status report for client output
    * @returns {Promise<Response>} JSON Response
    */
-  async handleStatusRequest(): Promise<Response> {
+  async handleStatusRequest(args?: { report: boolean }): Promise<Response> {
     try {
       const config = await this.getFeedConfig()
       const latestValue = await this.storage.get<Report>('latestValue')
@@ -178,6 +180,10 @@ export class ValueReporter {
             formattedValue: ethers.formatUnits(latestValue.value, 12)
           }
           : undefined
+      }
+
+      if (args?.report) {
+        status.dataSource = await fetchDataSources(config)
       }
 
       return jsonResponse(status)

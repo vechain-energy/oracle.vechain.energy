@@ -7,7 +7,7 @@ servers:
 paths:
   /{feedId}:
     get:
-      summary: get feed status and latest value
+      summary: get feed status and latest value. accessing with api key will provide details about the data sources.
       parameters:
         - in: path
           name: feedId
@@ -21,13 +21,19 @@ paths:
           content:
             application/json:
               schema: 
-                 $ref: '#/components/schemas/FeedStatus'
+                oneOf:
+                  - $ref: '#/components/schemas/FeedStatus'
+                  - allOf:
+                    - $ref: '#/components/schemas/FeedStatus'
+                    - $ref: '#/components/schemas/FeedStatusAuthorized'
         '404':
           description: 'Not Found'
           content:
             application/json:
                 schema:
                     $ref: '#/components/schemas/ResponseError'
+      security:
+        - authorization: []
 
     post:
       summary: add or update a feed configuration
@@ -277,6 +283,46 @@ components:
                updatedAt:
                  type: string
                  description: uint128 value
+    FeedStatusAuthorized:
+       type: object
+       properties:
+           dataSource:
+             type: object
+             optional: true
+             properties:
+               value:
+                 type: string
+                 example: "29919579637"
+               errors:
+                 type: number
+                 example: 0
+               sources:
+                 type: array
+                 items:
+                   type: object
+                   properties:
+                     url:
+                       type: string
+                       example: "https://api.coincap.io/v2/assets/vechain"
+                     path:
+                       type: string
+                       example: ".data.priceUsd"
+                     value:
+                       type: number
+                       example: 0.0299195796373831
+                     available:
+                       type: boolean
+                       example: true
+               base:
+                 type: array
+                 items:
+                   type: number
+                 example: [0.029919579637]
+               outliers:
+                 type: array
+                 items:
+                   type: number
+                 example: [0.5, 0.1]
     ResponseError:
      type: object
      properties:

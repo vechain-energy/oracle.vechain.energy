@@ -31,6 +31,19 @@ export const CcipRequestSchema = z.object({
 export type CcipRequest = z.infer<typeof CcipRequestSchema>;
 
 
+export const DataSourceResultSchema = z.object({
+  value: z.bigint(),
+  sources: z.array(z.object({
+    url: z.string(),
+    path: z.string(),
+    available: z.boolean(),
+    value: z.number()
+  })),
+  base: z.array(z.number()),
+  outliers: z.array(z.number()),
+  errors: z.number()
+})
+
 export const StatusSchema = z.object({
   healthy: z.boolean(),
   nextUpdate: z.number().nullable(),
@@ -39,6 +52,12 @@ export const StatusSchema = z.object({
     heartbeat: z.number(),
     deviationPoints: z.number()
   }),
+  sources: z.array(z.object({
+    url: z.string(),
+    path: z.string(),
+    value: z.number(),
+    available: z.boolean()
+  })).optional(),
   latestValue: ReportSchema.extend({
     formattedValue: z.string(),
   }).optional()
@@ -54,3 +73,4 @@ export interface Env {
 export type Report = z.infer<typeof ReportSchema>;
 export type FeedConfig = z.infer<typeof FeedConfigSchema>;
 export type Status = z.infer<typeof StatusSchema>;
+export type DataResult = z.infer<typeof DataSourceResultSchema>;

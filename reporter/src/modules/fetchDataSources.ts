@@ -1,26 +1,13 @@
-import type { FeedConfig } from "../types";
+import type { FeedConfig, DataResult } from "../types";
 import { ethers } from 'ethers'
 
 // single values that have a huge difference to the average will be ignored
 const IGNORE_OUTLIER_PERCENTAGE = 0.1
 
-type SourceValue = {
-    url: string
-    path: string
-    available: boolean
-    value: number
-}
 
-type ValueResult = {
-    value: bigint
-    sources: SourceValue[]
-    base: number[]
-    outliers: number[]
-    errors: number
-}
 
-export default async function fetchDataSources(config: FeedConfig): Promise<ValueResult> {
-    const result: ValueResult = {
+export default async function fetchDataSources(config: FeedConfig): Promise<DataResult> {
+    const result: DataResult = {
         value: 0n,
         sources: [],
         base: [],
