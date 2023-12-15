@@ -161,8 +161,10 @@ export class ValueReporter {
       const latestValue = await this.storage.get<Report>('latestValue')
       const nextUpdate = await this.storage.getAlarm()
 
+      const healthy = !latestValue?.value ? false : !await isUpdateRequired(config, latestValue.value)
       const status = <Status>{
         id: config.id,
+        healthy,
         interval: config.interval,
         heartbeat: config.heartbeat,
         deviationPoints: config.deviationPoints,

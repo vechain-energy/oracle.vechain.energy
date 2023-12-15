@@ -240,6 +240,9 @@ components:
            id:
              type: string
              example: "vet-usd"
+           healthy:
+             type: boolean
+             example: true
            heartbeat:
              type: integer
              example: 3600
