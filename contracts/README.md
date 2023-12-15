@@ -12,7 +12,7 @@ interface IVechainEnergyOracleV1 {
     // access value for a given feed id
     function getLatestValue(bytes32 id) external view returns (uint128 value, uint128 updatedAt);
 
-    // allows everyon to update values using a verified & signed responses from the public API
+    // allows everyone to update values using a verified & signed responses from the public API
     function updateValueWithProof(bytes memory message, bytes memory extraData, address signedFor) external;
 }
 ```
