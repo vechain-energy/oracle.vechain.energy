@@ -13,8 +13,12 @@ export const FeedConfigSchema = z.object({
   contracts: z.array(FeedContractSchema),
   sources: z.array(z.object({
     url: z.string(),
-    path: z.string()
-  })).min(1),
+    path: z.string(),
+    method: z.enum(['POST', 'GET']).optional(),
+    body: z.string().optional(),
+    headers: z.record(z.string()).optional(),
+    decimals: z.number().default(18).optional()
+})).min(1),
 });
 
 export const ReportSchema = z.object({

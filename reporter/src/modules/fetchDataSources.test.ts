@@ -25,7 +25,7 @@ describe('fetchDataSources(config)', () => {
         await fetchDataSources(config)
         expect(fetchMock).toHaveBeenCalledTimes(config.sources.length)
         config.sources.forEach(source => {
-            expect(fetchMock).toHaveBeenCalledWith(source.url)
+            expect(fetchMock).toHaveBeenCalledWith(source.url, { method: 'GET' })
         })
     })
 
@@ -187,6 +187,75 @@ describe('fetchDataSources(config)', () => {
 
             expect(num).toEqual(0.1)
         })
+
+        it.each(['GET', 'POST'])('supports http verb "%s"', async (verb) => {
+            const source = { url: 'https://postman-echo.com/get?1', path: '.test.key', method: verb as 'GET' | 'POST' }
+
+            const mockResponse = {
+                json: jest.fn(() => ({ test: { key: '0.1' } }))
+            }
+            fetchMock.mockResolvedValue(mockResponse as any)
+            const num = await fetchDataSource(source)
+
+            expect(fetchMock).toHaveBeenCalledWith(source.url, {
+                method: verb
+            })
+        })
+
+        it('supports sending a custom body', async () => {
+            const source = { url: 'https://postman-echo.com/post', path: '.test.key', method: 'POST' as 'GET' | 'POST', body: '{"hello":"world"}' }
+
+            const mockResponse = {
+                json: jest.fn(() => ({ test: { key: '0.1' } }))
+            }
+            fetchMock.mockResolvedValue(mockResponse as any)
+            const num = await fetchDataSource(source)
+
+            expect(fetchMock).toHaveBeenCalledWith(source.url, {
+                method: source.method,
+                body: source.body
+            })
+        })
+
+        it('supports sending custom headers', async () => {
+            const source = { url: 'https://postman-echo.com/post', path: '.test.key', method: 'POST' as 'GET' | 'POST', body: '{"hello":"world"}', headers: { 'content-type': 'application/json' } }
+
+            const mockResponse = {
+                json: jest.fn(() => ({ test: { key: '0.1' } }))
+            }
+            fetchMock.mockResolvedValue(mockResponse as any)
+            const num = await fetchDataSource(source)
+
+            expect(fetchMock).toHaveBeenCalledWith(source.url, {
+                method: source.method,
+                body: source.body,
+                headers: source.headers
+            })
+        })
+
+        it('supports hex values in response', async () => {
+            const source = { url: 'https://postman-echo.com/post', path: '.test.key', method: 'POST' as 'GET' | 'POST', body: '{"hello":"world"}', headers: { 'content-type': 'application/json' }, decimals: 0 }
+
+            const mockResponse = {
+                json: jest.fn(() => ({ test: { key: '0x00000000000000000000ff' } }))
+            }
+            fetchMock.mockResolvedValue(mockResponse as any)
+            const num = await fetchDataSource(source)
+
+            expect(num).toEqual(255)
+        })
+
+        it('supports decimals values in response', async () => {
+            const source = { url: 'https://postman-echo.com/post', path: '.test.key', method: 'POST' as 'GET' | 'POST', body: '{"hello":"world"}', headers: { 'content-type': 'application/json' }, decimals: 0 }
+
+            const mockResponse = {
+                json: jest.fn(() => ({ test: { key: '0x00000000000000000000000000000000000000000000000000000000067cd629' } }))
+            }
+            fetchMock.mockResolvedValue(mockResponse as any)
+            const num = await fetchDataSource(source)
+
+            expect(num).toEqual(108844585)
+        })
     })
 })
 
@@ -196,10 +265,10 @@ function getMockTask(values?: Partial<FeedConfig>): FeedConfig {
         heartbeat: 86400,
         deviationPoints: 100,
         interval: 10,
-        contract: {
+        contracts: [{
             nodeUrl: 'https://',
             address: '0x..'
-        },
+        }],
         sources: [
             {
                 url: 'https://test.com',

@@ -7,13 +7,17 @@ import FeedSheet from './Sheet';
 
 const UPDATE_INTERVAL_SECONDS = 30
 export default function FeedStatus({ feedId }: { feedId: string }): React.ReactElement {
-    const { data, isLoading } = useQuery<Status>({
+    const { data, isLoading } = useQuery<Status | { message: string }>({
         queryKey: [feedId],
-        queryFn: ({ queryKey }) => fetch(`${ORACLE_API_URL}/${feedId}`).then((res) => res.json()),
+        queryFn: () => fetch(`${ORACLE_API_URL}/${feedId}`).then((res) => res.json()),
         enabled: true,
         keepPreviousData: true,
         refetchInterval: UPDATE_INTERVAL_SECONDS * 1000
     })
+
+    if (data && 'message' in data) {
+        return <div className="text-red-600 font-bold">{feedId}: {data.message}</div>
+    }
 
     return (
         <div className="rounded overflow-hidden shadow-lg p-4">
