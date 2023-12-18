@@ -47,6 +47,7 @@ export const DataSourceResultSchema = z.object({
 })
 
 export const StatusSchema = z.object({
+  id: z.string(),
   healthy: z.boolean(),
   unhealthyContracts: z.array(FeedContractSchema),
   nextUpdate: z.number().nullable(),
