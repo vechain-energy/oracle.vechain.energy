@@ -66,8 +66,6 @@ export async function fetchDataSource({ url, path, method = 'GET', body, headers
         return acc[part]
     }, document))
 
-
-    console.log(value,decimals)
     const numValue = value.startsWith('0x') ? parseFloat(formatUnits(value, decimals)) : parseFloat(value)
 
     if (isNaN(numValue)) { throw new Error(`could not extract number value from: ${value}`) }
