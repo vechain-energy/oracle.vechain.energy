@@ -19,7 +19,7 @@ const queryClient = new QueryClient({
     return (
         <QueryClientProvider client={queryClient}>
             <div className="w-full h-full flex justify-center">
-                <div className="max-w-2xl w-full space-y-24 mt-12">
+                <div className="max-w-2xl w-full space-y-24 m-12">
                     {FEED_IDS.map(feedId =>
                         (<FeedStatus key={feedId} feedId={feedId} />)
                     )}
