@@ -48,16 +48,18 @@ export const DataSourceResultSchema = z.object({
 
 export const StatusSchema = z.object({
   healthy: z.boolean(),
+  unhealthyContracts: z.array(FeedContractSchema),
   nextUpdate: z.number().nullable(),
   config: z.object({
     interval: z.number(),
     heartbeat: z.number(),
-    deviationPoints: z.number()
+    deviationPoints: z.number(),
+    contracts: z.array(FeedContractSchema)
   }),
   dataSource: DataSourceResultSchema.optional(),
   latestValue: ReportSchema.extend({
     formattedValue: z.string(),
-  }).optional()
+  }).optional(),
 });
 
 export interface Env {

@@ -167,22 +167,25 @@ export class ValueReporter {
       const latestValue = await this.storage.get<Report>('latestValue')
       const nextUpdate = await this.storage.getAlarm()
 
-      const healthy = !latestValue?.value ? false : (await requiredUpdates(config, latestValue.value)).length === 0
+      const unhealthyContracts = latestValue?.value ? await requiredUpdates(config, latestValue.value) : []
+      const healthy = !latestValue?.value ? false : unhealthyContracts.length === 0
       const status = <Status>{
         id: config.id,
-        nextUpdate,
-        healthy,
         config: {
           interval: config.interval,
           heartbeat: config.heartbeat,
           deviationPoints: config.deviationPoints,
+          contracts: config.contracts
         },
         latestValue: latestValue
           ? {
             ...latestValue,
             formattedValue: ethers.formatUnits(latestValue.value, 12)
           }
-          : undefined
+          : undefined,
+        nextUpdate,
+        healthy,
+        unhealthyContracts
       }
 
       if (args?.report) {
