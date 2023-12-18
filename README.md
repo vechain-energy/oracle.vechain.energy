@@ -17,6 +17,7 @@ It includes smart contracts for storing data on-chain and a backend that updates
      * and signed for verification in contracts
 * [**example-consumers/**](./example-consumers/) contains sample snippets accessing the feed data
 * [**statuspage/**](./statuspage/) contains html statuspage with a visualized health status
+  * Also deployed on [status.oracle.vechain.energy](https://status.oracle.vechain.energy/).
 
 
 ## Processing Sequences
