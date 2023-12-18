@@ -18,7 +18,7 @@ const queryClient = new QueryClient({
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="w-full h-full flex justify-center flex-wrap">
+      <div className="w-full h-full min-h-screen flex justify-center flex-wrap bg-white-100 dark:bg-gray-900 text-black dark:text-white">
         {FEED_IDS.map(feedId =>
           <div key={feedId} className="lg:max-w-2xl w-full m-12">
             <FeedStatus feedId={feedId} />

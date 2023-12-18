@@ -20,7 +20,7 @@ export default function FeedStatus({ feedId }: { feedId: string }): React.ReactE
     }
 
     return (
-        <div className="rounded overflow-hidden shadow-lg p-4">
+        <div className="rounded overflow-hidden shadow-lg dark:shadow-stone-700 p-4">
             {(isLoading || !data)
                 ? <LoadingIndicator />
                 : <FeedSheet status={data} />
