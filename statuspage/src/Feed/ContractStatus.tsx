@@ -28,13 +28,13 @@ export default function ContractStatus({ status, contract }: { status: Status, c
     }
 
     return (
-        <div className="flex justify-between items-start">
+        <div className="flex flex-col sm:flex-row justify-between items-start space-y-4 sm:space-y-0">
             <span className="font-mono text-sm">
                 <div>{contract.address}</div>
                 <div className="font-mono text-xs text-stone-400 dark:text-stone-800">{contract.nodeUrl}</div>
             </span>
 
-            <div className="text-right text-xs">
+            <div className="sm:text-right text-xs w-full sm:w-auto">
                 <div className="font-mono">
                     {formatUnits(data?.value ?? '0', 12)}
                 </div>
@@ -58,7 +58,7 @@ export default function ContractStatus({ status, contract }: { status: Status, c
                 </div>
             </div>
 
-            <div>
+            <div className="w-full sm:w-auto">
                 <HealthyBadge healthy={isHealthy} />
             </div>
         </div>
