@@ -9,7 +9,7 @@ const UPDATE_INTERVAL_SECONDS = 30
 export default function FeedStatus({ feedId }: { feedId: string }): React.ReactElement {
     const { data, isLoading } = useQuery<Status>({
         queryKey: [feedId],
-        queryFn: ({ queryKey }) => fetch(`${ORACLE_API_URL}/${queryKey[0]}`).then((res) => res.json()),
+        queryFn: ({ queryKey }) => fetch(`${ORACLE_API_URL}/${feedId}`).then((res) => res.json()),
         enabled: true,
         keepPreviousData: true,
         refetchInterval: UPDATE_INTERVAL_SECONDS * 1000

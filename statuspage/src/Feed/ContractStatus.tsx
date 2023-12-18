@@ -17,8 +17,8 @@ type OracleValue = {
 export default function ContractStatus({ status, contract }: { status: Status, contract: FeedContract }) {
     const isHealthy = !status.unhealthyContracts.some(({ address }) => address === contract.address)
     const { data, isLoading } = useQuery<OracleValue | undefined>({
-        queryKey: [contract.address],
-        queryFn: () => getLatestValue(contract),
+        queryKey: [contract.address, status.id, contract.nodeUrl],
+        queryFn: () => getLatestValue(status.id, contract),
         enabled: true,
         keepPreviousData: true
     })
@@ -28,23 +28,37 @@ export default function ContractStatus({ status, contract }: { status: Status, c
     }
 
     return (
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-start">
             <span className="font-mono text-sm">
                 <div>{contract.address}</div>
                 <div className="font-mono text-xs text-stone-400 dark:text-stone-800">{contract.nodeUrl}</div>
             </span>
 
             <div className="text-right text-xs">
-                <div className="font-mono">{formatUnits(data?.value ?? '0', 12)}</div>
+                <div className="font-mono">
+                    {formatUnits(data?.value ?? '0', 12)}
+                </div>
                 <div className="font-mono text-xs text-stone-400 dark:text-stone-800">
-                    {Boolean(data?.updatedAt)
-                        ? formatDistanceToNowStrict(new Date(Number(data!.updatedAt) * 1000), { addSuffix: true })
-                        : ''
+                    <div>
+                        {Boolean(data?.updatedAt)
+                            ? formatDistanceToNowStrict(new Date(Number(data!.updatedAt) * 1000), { addSuffix: true })
+                            : ''
+                        }
+                    </div>
+                    {
+                        (Boolean(status.latestValue?.value) && Boolean(data?.value))
+                        && <div className="text-stone-400 dark:text-stone-800" title='Deviation'>
+                            (deviated by {calculateDeviation(
+                                Number(formatUnits(status.latestValue!.value ?? '0', 12)),
+                                Number(formatUnits(data?.value ?? '0', 12))
+                            )} points)
+                        </div>
                     }
+
                 </div>
             </div>
 
-            <div className="self-start">
+            <div>
                 <HealthyBadge healthy={isHealthy} />
             </div>
         </div>
@@ -53,7 +67,7 @@ export default function ContractStatus({ status, contract }: { status: Status, c
 
 
 
-async function getLatestValue(contract: FeedContract): Promise<OracleValue | undefined> {
+async function getLatestValue(feedId: string, contract: FeedContract): Promise<OracleValue | undefined> {
     const response = (await (
         await fetch(`${contract.nodeUrl}/accounts/*`, {
             method: "POST",
@@ -65,7 +79,7 @@ async function getLatestValue(contract: FeedContract): Promise<OracleValue | und
                     {
                         to: contract.address,
                         data: OracleInterface.encodeFunctionData("getLatestValue", [
-                            encodeBytes32String("vet-usd"),
+                            encodeBytes32String(feedId),
                         ]),
                     },
                 ],
@@ -83,4 +97,11 @@ async function getLatestValue(contract: FeedContract): Promise<OracleValue | und
     ) as unknown as OracleValue;
 
     return { value, updatedAt };
+}
+
+function calculateDeviation(val1: number, val2: number): number {
+    const percentage = 1 - (val1 / val2)
+    const points = Math.abs(Math.floor(percentage * 10000))
+
+    return points
 }
