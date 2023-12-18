@@ -54,7 +54,7 @@ export default function FeedSheet({ status }: { status: Status }) {
 
                     <dt className="text-sm font-thin leading-6">Deviation Threshold</dt>
                     <dd className="mt-1 font-mono text-sm leading-6  sm:col-span-2 sm:mt-0 flex space-x-2 items-baseline sm:justify-end pb-4 sm:pb-0">
-                        {status.config.deviationPoints / 100}%
+                        {status.config.deviationPoints} points
                     </dd>
 
                 </div>
