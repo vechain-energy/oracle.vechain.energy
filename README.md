@@ -16,6 +16,7 @@ It includes smart contracts for storing data on-chain and a backend that updates
      * as pure information for processing
      * and signed for verification in contracts
 * [**example-consumers/**](./example-consumers/) contains sample snippets accessing the feed data
+* [**statuspage/**](./statuspage/) contains html statuspage with a visualized health status
 
 
 ## Processing Sequences
@@ -169,10 +170,10 @@ curl -XPOST http://localhost:8787/vet-usd \
     "heartbeat": 3600,
     "deviationPoints": 100,
     "interval": 60,
-    "contract": {
+    "contracts": [{
         "nodeUrl": "https://node-testnet.vechain.energy",
         "address": "'"$ORACLE_ADDRESS"'"
-    }
+    }]
 }
 '
 ```
@@ -190,10 +191,10 @@ vet-usd new configuration {
   heartbeat: 3600,
   deviationPoints: 100,
   interval: 60,
-  contract: {
+  contracts: [{
     nodeUrl: 'https://node-testnet.vechain.energy',
     address: '0xf50d68918b8A63d113c6c329A893F6e9d3a4Bb30'
-  },
+  }],
   sources: [
     {
       url: 'https://api.coincap.io/v2/assets/vechain',
