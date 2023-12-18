@@ -22,4 +22,5 @@ yarn parcel src/index.html
 
 ```env
 ORACLE_API_URL="https://oracle.vechain.energy"
+ORACLE_FEED_IDS="vet-usd,vtho-usd"
 ```

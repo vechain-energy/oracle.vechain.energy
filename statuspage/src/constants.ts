@@ -6,4 +6,7 @@ export const OracleInterface = new Interface([
 ]);
 
 
-export const FEED_IDS = ['vet-usd', 'vtho-usd']
+export const FEED_IDS = (process.env.ORACLE_FEED_IDS ?? '')
+    .split(',')
+    .map(feedId => feedId.trim())
+    .filter(feedId => Boolean(feedId))
