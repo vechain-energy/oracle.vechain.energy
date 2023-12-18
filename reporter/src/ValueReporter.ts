@@ -2,7 +2,7 @@ import { type Env, type FeedConfig, type Report, type Status, CcipRequestSchema,
 import { z } from 'zod'
 import publishReport from './modules/publishReport';
 import fetchDataSources from './modules/fetchDataSources';
-import isUpdateRequired from './modules/isUpdateRequired'
+import requiredUpdates from './modules/requiredUpdates'
 import signCcipRequest from './modules/signCcipRequest';
 import { ethers } from 'ethers';
 
@@ -117,14 +117,11 @@ export class ValueReporter {
     console.log(config.id, 'last value:', report.value, 'updatedAt', report.updatedAt)
     console.log(config.id, 'calculation basics', data)
 
-    const shouldUpdate = await isUpdateRequired(config, data.value)
-    if (shouldUpdate) {
+    const requiredContractUpdates = await requiredUpdates(config, data.value)
+    for (const contract of requiredContractUpdates) {
       console.log(config.id, '**updating**')
-      const updatedDetails = await publishReport({ config, report, env: this.env })
+      const updatedDetails = await publishReport({ contract, report, env: this.env })
       console.log(config.id, updatedDetails)
-    }
-    else {
-      console.log(config.id, 'not updating')
     }
   }
 
@@ -170,22 +167,25 @@ export class ValueReporter {
       const latestValue = await this.storage.get<Report>('latestValue')
       const nextUpdate = await this.storage.getAlarm()
 
-      const healthy = !latestValue?.value ? false : !await isUpdateRequired(config, latestValue.value)
+      const unhealthyContracts = latestValue?.value ? await requiredUpdates(config, latestValue.value) : []
+      const healthy = !latestValue?.value ? false : unhealthyContracts.length === 0
       const status = <Status>{
         id: config.id,
-        nextUpdate,
-        healthy,
         config: {
           interval: config.interval,
           heartbeat: config.heartbeat,
           deviationPoints: config.deviationPoints,
+          contracts: config.contracts
         },
         latestValue: latestValue
           ? {
             ...latestValue,
             formattedValue: ethers.formatUnits(latestValue.value, 12)
           }
-          : undefined
+          : undefined,
+        nextUpdate,
+        healthy,
+        unhealthyContracts
       }
 
       if (args?.report) {

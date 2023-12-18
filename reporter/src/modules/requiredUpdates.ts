@@ -1,10 +1,22 @@
 import { OracleV1 } from "../constants/Contract";
-import type { FeedConfig } from "../types";
+import type { FeedConfig, FeedContract } from "../types";
 import { ethers } from 'ethers'
 
-export default async function isUpdateRequired(config: FeedConfig, newValue: bigint): Promise<boolean> {
+export default async function requiredUpdates(config: FeedConfig, newValue: bigint): Promise<FeedContract[]> {
+    const requiredUpdates = []
+    for (const contract of config.contracts) {
+        const shouldUpdate = await isUpdateRequired(config, contract, newValue)
+        if (shouldUpdate) {
+            requiredUpdates.push(contract)
+        }
+    }
+
+    return requiredUpdates
+}
+
+export async function isUpdateRequired(config: FeedConfig, feedContract: FeedContract, newValue: bigint): Promise<boolean> {
     const response = (await (
-        await fetch(`${config.contract.nodeUrl}/accounts/*`, {
+        await fetch(`${feedContract.nodeUrl}/accounts/*`, {
             method: "POST",
             headers: {
                 "content-type": "application/json",
@@ -12,7 +24,7 @@ export default async function isUpdateRequired(config: FeedConfig, newValue: big
             body: JSON.stringify({
                 clauses: [
                     {
-                        to: config.contract.address,
+                        to: feedContract.address,
                         data: OracleV1.encodeFunctionData(
                             "getLatestValue",
                             [ethers.encodeBytes32String(config.id)]
@@ -51,4 +63,5 @@ export default async function isUpdateRequired(config: FeedConfig, newValue: big
 
 
     return false
+
 }

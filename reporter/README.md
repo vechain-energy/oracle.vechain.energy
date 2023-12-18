@@ -46,10 +46,12 @@ curl -XPOST http://localhost:8787/vet-usd \
     "heartbeat": 3600,
     "deviationPoints": 100,
     "interval": 60,
-    "contract": {
-        "nodeUrl": "https://node-testnet.vechain.energy",
-        "address": "<CONTRACT_ADDRESS>"
-    }
+    "contracts": [
+        {
+            "nodeUrl": "https://node-testnet.vechain.energy",
+            "address": "<CONTRACT_ADDRESS>"
+        }
+    ]
 }
 '
 ```

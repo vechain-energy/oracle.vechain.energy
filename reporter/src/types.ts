@@ -1,14 +1,16 @@
 import { z } from 'zod'
 
+export const FeedContractSchema = z.object({
+  nodeUrl: z.string(),
+  address: z.string()
+})
+
 export const FeedConfigSchema = z.object({
   id: z.string(),
   heartbeat: z.number(),
   deviationPoints: z.number(),
   interval: z.number(),
-  contract: z.object({
-    nodeUrl: z.string(),
-    address: z.string()
-  }),
+  contracts: z.array(FeedContractSchema),
   sources: z.array(z.object({
     url: z.string(),
     path: z.string()
@@ -46,21 +48,18 @@ export const DataSourceResultSchema = z.object({
 
 export const StatusSchema = z.object({
   healthy: z.boolean(),
+  unhealthyContracts: z.array(FeedContractSchema),
   nextUpdate: z.number().nullable(),
   config: z.object({
     interval: z.number(),
     heartbeat: z.number(),
-    deviationPoints: z.number()
+    deviationPoints: z.number(),
+    contracts: z.array(FeedContractSchema)
   }),
-  sources: z.array(z.object({
-    url: z.string(),
-    path: z.string(),
-    value: z.number(),
-    available: z.boolean()
-  })).optional(),
+  dataSource: DataSourceResultSchema.optional(),
   latestValue: ReportSchema.extend({
     formattedValue: z.string(),
-  }).optional()
+  }).optional(),
 });
 
 export interface Env {
@@ -72,5 +71,6 @@ export interface Env {
 
 export type Report = z.infer<typeof ReportSchema>;
 export type FeedConfig = z.infer<typeof FeedConfigSchema>;
+export type FeedContract = z.infer<typeof FeedContractSchema>;
 export type Status = z.infer<typeof StatusSchema>;
 export type DataResult = z.infer<typeof DataSourceResultSchema>;
