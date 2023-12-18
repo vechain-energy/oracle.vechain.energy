@@ -26,7 +26,7 @@ It includes smart contracts for storing data on-chain and a backend that updates
 sequenceDiagram
     participant Admin
     participant Oracle-Reporter
-    participant Oracle-Contract
+    participant Oracle-Contracts
     participant Data-Sources
 
     Admin->>Oracle-Reporter: Config Data Feed
@@ -42,13 +42,15 @@ sequenceDiagram
 
        Oracle-Reporter->>Oracle-Reporter: calculate average value
 
-       Oracle-Reporter->>Oracle-Contract: request last value
-       Oracle-Contract-->>Oracle-Reporter: last value + timestamp
+       loop for each configured contract
+         Oracle-Reporter->>Oracle-Contracts: request last value
+         Oracle-Contracts-->>Oracle-Reporter: last value + timestamp
 
-        alt value deviated more than deviation threshold
-          Oracle-Reporter->>Oracle-Contract: update data
-        else opt value is older then max age threshold
-          Oracle-Reporter->>Oracle-Contract: update data
+          alt value deviated more than deviation threshold
+            Oracle-Reporter->>Oracle-Contracts: update data
+          else opt value is older then max age threshold
+            Oracle-Reporter->>Oracle-Contracts: update data
+        end
       end
     end
 ```
