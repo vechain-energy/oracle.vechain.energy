@@ -70,7 +70,6 @@ export const StatusSchema = z.object({
 export interface Env {
   ValueReporter: DurableObjectNamespace
   PRIVATE_KEY: string
-  VEN_API_KEY: string
   API_KEY: string
 }
 

@@ -10,11 +10,11 @@ export default async function publishReport({ contract, report, env }: { contrac
         }
     ]
 
+    // @TODO: sign & submit transaction (optionally with fee delegation)
     const txResult = await (await fetch('https://api.vechain.energy/v1/transaction', {
         method: 'POST',
         headers: {
             'content-type': 'application/json',
-            'x-api-key': env?.VEN_API_KEY ?? '',
             'x-private-key': env?.PRIVATE_KEY ?? ''
         },
         body: JSON.stringify({ clauses })

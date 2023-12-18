@@ -14,5 +14,4 @@ new_classes = ["ValueReporter"]
 
 [vars]
 # PRIVATE_KEY = "0x…"
-# VEN_API_KEY = "…"
 # API_KEY = "…"

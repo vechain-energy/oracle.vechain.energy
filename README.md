@@ -65,11 +65,9 @@ First, deploy an Oracle-Contract from the [contracts](./contracts) directory.
 ### Collecting Data
 
 - Register on [Cloudflare](https://cloudflare.com), it will host the backend using [Cloudflare Workers](https://developers.cloudflare.com/workers/).
-- Register on [vechain.energy](https://vechain.energy) and set up [API-Relay](https://docs.vechain.energy/vechain.energy/API-Keys/). Configure it to interact with everyone.
 - Deploy the Reporter.
 - Set up the Reporter with:
   - Access to your Oracle-Contract.
-  - An API-Key for vechain.energy.
   - A secret API-Key for admin access.
 - Identify your Data Sources and set up the Reporter with them.
 
@@ -82,9 +80,6 @@ First, deploy an Oracle-Contract from the [contracts](./contracts) directory.
 ### Quick Start
 
 ```shell
-# get a vechain.energy API-Key that can interact with everyone
-VEN_API_KEY=""
-
 # generate a new private key
 PRIVATE_KEY="0x`openssl rand -hex 32`"
 
@@ -116,7 +111,6 @@ cd reporter
 # configure secret vars for local environment
 echo "PRIVATE_KEY=$PRIVATE_KEY" > .dev.vars
 echo "API_KEY=$API_KEY" >> .dev.vars
-echo "VEN_API_KEY=$VEN_API_KEY" >>  .dev.vars
 
 # install dependencies
 yarn install
@@ -125,7 +119,6 @@ cd ..
 # store environment variables for later
 echo "PRIVATE_KEY=$PRIVATE_KEY" > .env
 echo "API_KEY=$API_KEY" >> .env
-echo "VEN_API_KEY=$VEN_API_KEY" >>  .env
 echo "ORACLE_ADDRESS=$ORACLE_ADDRESS" >>  .env
 
 # the following command can restore the environment from .env file in the future:
@@ -149,7 +142,6 @@ Your worker has access to the following bindings:
 - Vars:
   - PRIVATE_KEY: "(hidden)"
   - API_KEY: "(hidden)"
-  - VEN_API_KEY: "(hidden)"
 ⎔ Starting local server...
 [wrangler:inf] Ready on http://localhost:8787
 ```
