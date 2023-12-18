@@ -54,12 +54,7 @@ export const StatusSchema = z.object({
     heartbeat: z.number(),
     deviationPoints: z.number()
   }),
-  sources: z.array(z.object({
-    url: z.string(),
-    path: z.string(),
-    value: z.number(),
-    available: z.boolean()
-  })).optional(),
+  dataSource: DataSourceResultSchema.optional(),
   latestValue: ReportSchema.extend({
     formattedValue: z.string(),
   }).optional()

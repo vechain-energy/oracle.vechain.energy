@@ -120,7 +120,7 @@ export class ValueReporter {
     const requiredContractUpdates = await requiredUpdates(config, data.value)
     for (const contract of requiredContractUpdates) {
       console.log(config.id, '**updating**')
-      const updatedDetails = await publishReport({ config, contract, report, env: this.env })
+      const updatedDetails = await publishReport({ contract, report, env: this.env })
       console.log(config.id, updatedDetails)
     }
   }
@@ -167,7 +167,7 @@ export class ValueReporter {
       const latestValue = await this.storage.get<Report>('latestValue')
       const nextUpdate = await this.storage.getAlarm()
 
-      const healthy = !latestValue?.value ? false : !await isUpdateRequired(config, latestValue.value)
+      const healthy = !latestValue?.value ? false : (await requiredUpdates(config, latestValue.value)).length === 0
       const status = <Status>{
         id: config.id,
         nextUpdate,
