@@ -1,8 +1,56 @@
-import isUpdateRequired from './isUpdateRequired'
-import type { FeedConfig, Report } from '../types'
+import requiredUpdates, { isUpdateRequired } from './requiredUpdates'
+import type { FeedConfig } from '../types'
 import { ethers } from 'ethers'
 import { OracleV1 } from '../constants/Contract'
 
+
+describe('requiredUpdates(config, value)', () => {
+
+    let fetchMock: any = undefined;
+
+    beforeEach(() => {
+        fetchMock = jest.spyOn(global, "fetch")
+    });
+
+    afterEach(() => {
+        jest.restoreAllMocks();
+    });
+
+    it('returns list of contracts that need updating', async () => {
+        const config = getMockTask()
+
+        fetchMock.mockImplementation((nodeUrl: string) => {
+            return {
+                json: () => {
+                    const value = 100
+                    const timestamp = Math.floor(Date.now() / 1000) - (nodeUrl.includes('ShouldUpdate') ? (config.heartbeat * 2) : 0)
+                    const data = OracleV1.encodeFunctionResult('getLatestValue', [value, timestamp])
+                    return [{ data, reverted: false }]
+                }
+            }
+        })
+        const result = await requiredUpdates(config, BigInt(0))
+        expect(result).toEqual([config.contracts[1]])
+    })
+
+
+    it('returns empty list if no contracts need updating', async () => {
+        const config = getMockTask()
+
+        fetchMock.mockImplementation(() => {
+            return {
+                json: () => {
+                    const value = 100
+                    const timestamp = Math.floor(Date.now() / 1000)
+                    const data = OracleV1.encodeFunctionResult('getLatestValue', [value, timestamp])
+                    return [{ data, reverted: false }]
+                }
+            }
+        })
+        const result = await requiredUpdates(config, BigInt(0))
+        expect(result).toEqual([])
+    })
+})
 
 describe('isUpdateRequired(config, value)', () => {
 
@@ -24,8 +72,8 @@ describe('isUpdateRequired(config, value)', () => {
         }
         fetchMock.mockResolvedValue(mockResponse as any)
 
-        await isUpdateRequired(config, BigInt(0))
-        expect(fetchMock).toHaveBeenCalledWith(`${config.contract.nodeUrl}/accounts/*`, {
+        await isUpdateRequired(config, config.contracts[0], BigInt(0))
+        expect(fetchMock).toHaveBeenCalledWith(`${config.contracts[0].nodeUrl}/accounts/*`, {
             method: 'POST',
             headers: {
                 "content-type": "application/json",
@@ -33,7 +81,7 @@ describe('isUpdateRequired(config, value)', () => {
             body: JSON.stringify({
                 clauses: [
                     {
-                        to: config.contract.address,
+                        to: config.contracts[0].address,
                         data: OracleV1.encodeFunctionData("getLatestValue", [
                             ethers.encodeBytes32String(config.id),
                         ]),
@@ -46,15 +94,12 @@ describe('isUpdateRequired(config, value)', () => {
     it('returns false if blockchain node could not handle data correctly', async () => {
         const config = getMockTask()
 
-        const value = 100
-        const timestamp = 200
-        const data = OracleV1.encodeFunctionResult('getLatestValue', [value, timestamp])
         const mockResponse = {
             json: jest.fn().mockResolvedValue({})
         }
         fetchMock.mockResolvedValue(mockResponse as any)
 
-        const result = await isUpdateRequired(config, BigInt(0))
+        const result = await isUpdateRequired(config, config.contracts[0], BigInt(0))
         expect(result).toEqual(false)
     })
 
@@ -69,7 +114,7 @@ describe('isUpdateRequired(config, value)', () => {
         }
         fetchMock.mockResolvedValue(mockResponse as any)
 
-        const result = await isUpdateRequired(config, BigInt(0))
+        const result = await isUpdateRequired(config, config.contracts[0], BigInt(0))
         expect(result).toEqual(true)
     })
 
@@ -88,7 +133,7 @@ describe('isUpdateRequired(config, value)', () => {
             }
             fetchMock.mockResolvedValue(mockResponse as any)
 
-            const result = await isUpdateRequired(config, BigInt(0))
+            const result = await isUpdateRequired(config, config.contracts[0], BigInt(0))
             expect(result).toEqual(true)
         })
 
@@ -105,7 +150,7 @@ describe('isUpdateRequired(config, value)', () => {
             }
             fetchMock.mockResolvedValue(mockResponse as any)
 
-            const result = await isUpdateRequired(config, BigInt(0))
+            const result = await isUpdateRequired(config, config.contracts[0], BigInt(0))
             expect(result).toEqual(false)
         })
     })
@@ -125,7 +170,7 @@ describe('isUpdateRequired(config, value)', () => {
             }
             fetchMock.mockResolvedValue(mockResponse as any)
 
-            const result = await isUpdateRequired(config, BigInt(newValue))
+            const result = await isUpdateRequired(config, config.contracts[0], BigInt(newValue))
             expect(result).toEqual(true)
         })
 
@@ -143,7 +188,7 @@ describe('isUpdateRequired(config, value)', () => {
             }
             fetchMock.mockResolvedValue(mockResponse as any)
 
-            const result = await isUpdateRequired(config, BigInt(newValue))
+            const result = await isUpdateRequired(config, config.contracts[0], BigInt(newValue))
             expect(result).toEqual(false)
         })
     })
@@ -155,10 +200,16 @@ function getMockTask(values?: Partial<FeedConfig>): FeedConfig {
         heartbeat: 86400,
         deviationPoints: 100,
         interval: 10,
-        contract: {
-            nodeUrl: 'https://node-testnet.vechain.energy',
-            address: '0x..'
-        },
+        contracts: [
+            {
+                nodeUrl: 'https://node-testnet.vechain.energy/ShouldNotUpdate',
+                address: '0xCurrent'
+            },
+            {
+                nodeUrl: 'https://node-mainnet.vechain.energy/ShouldUpdate',
+                address: '0xDeviated'
+            },
+        ],
         sources: [
             {
                 url: 'https://test.com',

@@ -1,10 +1,10 @@
 import publishReport from './publishReport'
-import type { FeedConfig, Report } from '../types'
+import type { FeedConfig, FeedContract, Report } from '../types'
 import { ethers } from 'ethers'
 import { OracleV1 } from '../constants/Contract'
 
 
-describe('publishReport({ config, report, env })', () => {
+describe('publishReport({ contract, report, env })', () => {
 
     let fetchMock: any = undefined;
 
@@ -17,29 +17,29 @@ describe('publishReport({ config, report, env })', () => {
     });
 
     it('returns raw text result from transaction submission', async () => {
-        const task = getMockTask()
+        const contract = getMockContract()
         const report = getMockReport()
         const mockResponse = {
             text: jest.fn().mockResolvedValue('mocked response')
         }
         fetchMock.mockResolvedValue(mockResponse as any)
-        const result = await publishReport({ config: task, report })
+        const result = await publishReport({ contract, report })
         expect(fetchMock).toHaveBeenCalled()
         expect(result).toBe('mocked response')
     })
 
     it('submits the correct transaction call with updateValue(id, newValue, newTimestamp)', async () => {
-        const task = getMockTask()
+        const contract = getMockContract()
         const report = getMockReport()
 
         const clauses = [
             {
-                to: task.contract.address,
+                to: contract.address,
                 data: OracleV1.encodeFunctionData('updateValue', [ethers.encodeBytes32String(report.id), report.value, report.updatedAt])
             }
         ]
 
-        await publishReport({ config: task, report })
+        await publishReport({ contract, report })
         expect(fetchMock).toHaveBeenCalledWith(
             'https://api.vechain.energy/v1/transaction',
             {
@@ -56,22 +56,10 @@ describe('publishReport({ config, report, env })', () => {
     })
 })
 
-function getMockTask(values?: Partial<FeedConfig>): FeedConfig {
+function getMockContract(values?: Partial<FeedContract>): FeedContract {
     return {
-        id: 'vet-usd',
-        heartbeat: 86400,
-        deviationPoints: 100,
-        interval: 10,
-        contract: {
-            nodeUrl: 'https://',
-            address: '0x..'
-        },
-        sources: [
-            {
-                url: 'https://test.com',
-                path: ''
-            }
-        ],
+        nodeUrl: 'https://',
+        address: '0x..',
         ...values
     }
 }

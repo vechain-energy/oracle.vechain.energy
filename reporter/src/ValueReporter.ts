@@ -2,7 +2,7 @@ import { type Env, type FeedConfig, type Report, type Status, CcipRequestSchema,
 import { z } from 'zod'
 import publishReport from './modules/publishReport';
 import fetchDataSources from './modules/fetchDataSources';
-import isUpdateRequired from './modules/isUpdateRequired'
+import requiredUpdates from './modules/requiredUpdates'
 import signCcipRequest from './modules/signCcipRequest';
 import { ethers } from 'ethers';
 
@@ -117,14 +117,11 @@ export class ValueReporter {
     console.log(config.id, 'last value:', report.value, 'updatedAt', report.updatedAt)
     console.log(config.id, 'calculation basics', data)
 
-    const shouldUpdate = await isUpdateRequired(config, data.value)
-    if (shouldUpdate) {
+    const requiredContractUpdates = await requiredUpdates(config, data.value)
+    for (const contract of requiredContractUpdates) {
       console.log(config.id, '**updating**')
-      const updatedDetails = await publishReport({ config, report, env: this.env })
+      const updatedDetails = await publishReport({ config, contract, report, env: this.env })
       console.log(config.id, updatedDetails)
-    }
-    else {
-      console.log(config.id, 'not updating')
     }
   }
 
