@@ -79,6 +79,8 @@ First, deploy an Oracle-Contract from the [contracts](./contracts) directory.
 
 ### Quick Start
 
+Check [`quickstart.sh`](./quickstart.sh) for a shell script that executes the process outlined below:
+
 ```shell
 # generate a new private key
 PRIVATE_KEY="0x`openssl rand -hex 32`"
