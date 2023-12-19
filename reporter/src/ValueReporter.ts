@@ -120,7 +120,7 @@ export class ValueReporter {
 
     const requiredContractUpdates = await requiredUpdates(config, data.value)
     for (const contract of requiredContractUpdates) {
-      console.log(config.id, '**updating**')
+      console.log(config.id, '**updating**', contract.address)
       const updatedDetails = await publishReport({ contract, report, env: this.env })
       console.log(config.id, updatedDetails)
     }
