@@ -89,10 +89,11 @@ export class ValueReporter {
     catch (err) {
       console.error('Update failed', err)
     }
-
-    const config = await this.getFeedConfig();
-    const nextUpdate = await this.scheduleNextUpdate()
-    console.log(config.id, 'sleeping till', nextUpdate.toISOString())
+    finally {
+      const config = await this.getFeedConfig();
+      const nextUpdate = await this.scheduleNextUpdate()
+      console.log(config.id, 'sleeping till', nextUpdate.toISOString())
+    }
   }
 
   /**
@@ -150,8 +151,8 @@ export class ValueReporter {
    * @returns {Promise<Date>} The data of the next run.
    */
   async scheduleNextUpdate(): Promise<Date> {
-    const task = await this.getFeedConfig()
-    const nextExecution = Date.now() + (task.interval * 1000)
+    const config = await this.getFeedConfig()
+    const nextExecution = Date.now() + (config.interval * 1000)
     this.storage.setAlarm(nextExecution)
 
     return new Date(nextExecution)
