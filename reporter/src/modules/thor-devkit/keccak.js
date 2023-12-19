@@ -1,0 +1,18 @@
+import { keccak_256 } from 'js-sha3';
+/**
+ * computes keccak256 hash of given data
+ * @param data one or more Buffer | string
+ */
+export function keccak256(...data) {
+    const h = keccak_256.create();
+    data.forEach(d => {
+        if (Buffer.isBuffer(d)) {
+            h.update(d);
+        }
+        else {
+            h.update(Buffer.from(d, 'utf8'));
+        }
+    });
+    return Buffer.from(h.digest());
+}
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoia2VjY2FrLmpzIiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiLi4vc3JjL2tlY2Nhay50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFBQSxPQUFPLEVBQUUsVUFBVSxFQUFFLE1BQU0sU0FBUyxDQUFBO0FBQ3BDOzs7R0FHRztBQUNILE1BQU0sVUFBVSxTQUFTLENBQUMsR0FBRyxJQUE0QjtJQUNyRCxNQUFNLENBQUMsR0FBRyxVQUFVLENBQUMsTUFBTSxFQUFFLENBQUE7SUFDN0IsSUFBSSxDQUFDLE9BQU8sQ0FBQyxDQUFDLENBQUMsRUFBRTtRQUNiLElBQUksTUFBTSxDQUFDLFFBQVEsQ0FBQyxDQUFDLENBQUMsRUFBRTtZQUNwQixDQUFDLENBQUMsTUFBTSxDQUFDLENBQUMsQ0FBQyxDQUFBO1NBQ2Q7YUFBTTtZQUNILENBQUMsQ0FBQyxNQUFNLENBQUMsTUFBTSxDQUFDLElBQUksQ0FBQyxDQUFDLEVBQUUsTUFBTSxDQUFDLENBQUMsQ0FBQTtTQUNuQztJQUNMLENBQUMsQ0FBQyxDQUFBO0lBQ0YsT0FBTyxNQUFNLENBQUMsSUFBSSxDQUFDLENBQUMsQ0FBQyxNQUFNLEVBQUUsQ0FBQyxDQUFBO0FBQ2xDLENBQUMifQ==

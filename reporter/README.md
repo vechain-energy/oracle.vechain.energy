@@ -10,6 +10,8 @@ Configuration access is protected with an API-Key.
 
 Each source is required to provide a JSON output. The numerical value is retrieved from a specified `path` in the source's output.
 
+The data is sent to the contracts located at the `address` on `nodeUrl`, using the `PRIVATE_KEY` that has been set up. If a `delegationUrl` is provided, the system will ask for fee delegation before it submits the transaction.
+
 The API is documented in [`public/swagger.yml`](./public/swagger.yml).
 
 ## Local Development

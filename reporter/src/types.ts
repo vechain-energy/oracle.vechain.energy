@@ -2,7 +2,8 @@ import { z } from 'zod'
 
 export const FeedContractSchema = z.object({
   nodeUrl: z.string(),
-  address: z.string()
+  address: z.string(),
+  delegationUrl: z.string().optional()
 })
 
 export const FeedConfigSchema = z.object({

@@ -175,7 +175,7 @@ export class ValueReporter {
           interval: config.interval,
           heartbeat: config.heartbeat,
           deviationPoints: config.deviationPoints,
-          contracts: config.contracts
+          contracts: config.contracts.map(({ address, nodeUrl }) => ({ address, nodeUrl }))
         },
         latestValue: latestValue
           ? {
@@ -185,7 +185,7 @@ export class ValueReporter {
           : undefined,
         nextUpdate,
         healthy,
-        unhealthyContracts
+        unhealthyContracts: unhealthyContracts.map(({ address, nodeUrl }) => ({ address, nodeUrl }))
       }
 
       if (args?.report) {

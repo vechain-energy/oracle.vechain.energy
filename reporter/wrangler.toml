@@ -1,5 +1,6 @@
 name = "reporter"
 main = "src/index.ts"
+node_compat = true
 compatibility_date = "2023-05-18"
 
 [durable_objects]

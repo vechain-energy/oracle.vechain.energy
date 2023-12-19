@@ -222,6 +222,12 @@ components:
                 example: "https://node-testnet.vechain.energy"
               address:
                 type: string
+              delegationUrl:
+                type: string
+                example: "https://sponsor-testnet.vechain.energy/by/90"
+            required:
+              - nodeUrl
+              - address
     RequestCCIP:
      type: object
      properties:
@@ -232,19 +238,19 @@ components:
           string: string
           example: "0x7665742d757364"
         urls:
-          optional: true
           type: array
           items:
             type: string
             example: "http://localhost:8787/vet-usd"
         callbackFunction:
-          optional: true
           type: string
           example: "0xd0c12da6"
         extraData:
-          optional: true
           type: string
           example: "0x7665742d757364"
+     required:
+       - sender
+       - callData
     FeedStatus:
        type: object
        properties:
