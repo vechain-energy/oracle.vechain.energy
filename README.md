@@ -65,11 +65,9 @@ First, deploy an Oracle-Contract from the [contracts](./contracts) directory.
 ### Collecting Data
 
 - Register on [Cloudflare](https://cloudflare.com), it will host the backend using [Cloudflare Workers](https://developers.cloudflare.com/workers/).
-- Register on [vechain.energy](https://vechain.energy) and set up [API-Relay](https://docs.vechain.energy/vechain.energy/API-Keys/). Configure it to interact with everyone.
 - Deploy the Reporter.
 - Set up the Reporter with:
   - Access to your Oracle-Contract.
-  - An API-Key for vechain.energy.
   - A secret API-Key for admin access.
 - Identify your Data Sources and set up the Reporter with them.
 
@@ -82,9 +80,6 @@ First, deploy an Oracle-Contract from the [contracts](./contracts) directory.
 ### Quick Start
 
 ```shell
-# get a vechain.energy API-Key that can interact with everyone
-VEN_API_KEY=""
-
 # generate a new private key
 PRIVATE_KEY="0x`openssl rand -hex 32`"
 
@@ -116,7 +111,6 @@ cd reporter
 # configure secret vars for local environment
 echo "PRIVATE_KEY=$PRIVATE_KEY" > .dev.vars
 echo "API_KEY=$API_KEY" >> .dev.vars
-echo "VEN_API_KEY=$VEN_API_KEY" >>  .dev.vars
 
 # install dependencies
 yarn install
@@ -125,7 +119,6 @@ cd ..
 # store environment variables for later
 echo "PRIVATE_KEY=$PRIVATE_KEY" > .env
 echo "API_KEY=$API_KEY" >> .env
-echo "VEN_API_KEY=$VEN_API_KEY" >>  .env
 echo "ORACLE_ADDRESS=$ORACLE_ADDRESS" >>  .env
 
 # the following command can restore the environment from .env file in the future:
@@ -149,7 +142,6 @@ Your worker has access to the following bindings:
 - Vars:
   - PRIVATE_KEY: "(hidden)"
   - API_KEY: "(hidden)"
-  - VEN_API_KEY: "(hidden)"
 ⎔ Starting local server...
 [wrangler:inf] Ready on http://localhost:8787
 ```
@@ -158,7 +150,7 @@ Your worker has access to the following bindings:
 Continue in first terminal with environment variables:
 
 ```shell
-# setup data feed
+# setup data feed, gas is paid by the delegationUrl
 curl -XPOST http://localhost:8787/vet-usd \
 -H "X-API-Key: ${API_KEY}" \
 -d '
@@ -175,7 +167,8 @@ curl -XPOST http://localhost:8787/vet-usd \
     "interval": 60,
     "contracts": [{
         "nodeUrl": "https://node-testnet.vechain.energy",
-        "address": "'"$ORACLE_ADDRESS"'"
+        "address": "'"$ORACLE_ADDRESS"'",
+        "delegationUrl": "https://sponsor-testnet.vechain.energy/by/90"
     }]
 }
 '
@@ -211,7 +204,7 @@ __fetched 0.0306102443635921 as average value
 vet-usd last value: 30610244364n updatedAt 1702558104
 age 1702558105 heartbeat 3600
 vet-usd **updating**
-vet-usd {"id":"0x87d077b7d7ca2921c56385fe725f01f721f05a83f2975627763caf46ba3e8ec9","url":"https://node-testnet.vechain.energy/transactions/0x87d077b7d7ca2921c56385fe725f01f721f05a83f2975627763caf46ba3e8ec9?pending=true"}
+vet-usd {"id":"0x87d077b7d7ca2921c56385fe725f01f721f05a83f2975627763caf46ba3e8ec9"}
 vet-usd sleeping till 2023-12-14T12:49:26.224Z
 ```
 

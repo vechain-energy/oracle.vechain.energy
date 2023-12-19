@@ -10,6 +10,8 @@ Configuration access is protected with an API-Key.
 
 Each source is required to provide a JSON output. The numerical value is retrieved from a specified `path` in the source's output.
 
+The data is sent to the contracts located at the `address` on `nodeUrl`, using the `PRIVATE_KEY` that has been set up. If a `delegationUrl` is provided, the system will ask for fee delegation before it submits the transaction.
+
 The API is documented in [`public/swagger.yml`](./public/swagger.yml).
 
 ## Local Development
@@ -18,7 +20,6 @@ Configure `.dev.vars` with:
 
 ```yml
 PRIVATE_KEY = ""
-VEN_API_KEY = ""
 API_KEY = ""
 ```
 
@@ -69,7 +70,6 @@ Make sure to correctly configure the required secrets:
 
 ```shell
 wrangler secret put PRIVATE_KEY 
-wrangler secret put VEN_API_KEY 
 ```
 
 
@@ -91,12 +91,10 @@ For each data update, the blockchain is checked for the latest stored informatio
 
 The contract interface is configured in `constants/Contract.ts`.
 
-Updates are published using [vechain.energy Relayer](https://docs.vechain.energy/vechain.energy/API-Keys/).
 
 ## Confidential Information
 
 * `PRIVATE_KEY` refers to the wallet that has `REPORTER_ROLE` access on the oracle contract.
-* `VEN_API_KEY` is the key for the vechain.energy API used by the relayer.
 
 You can set these as secret variables using wrangler:
 
@@ -105,11 +103,6 @@ $ wrangler secret put PRIVATE_KEY
 ✔ Enter a secret value: … ******************************************************************
 🌀 Creating the secret for the Worker "reporter" 
 ✨ Success! Uploaded secret PRIVATE_KEY
-
-$ wrangler secret put VEN_API_KEY 
-✔ Enter a secret value: … ******************************************************************************************
-🌀 Creating the secret for the Worker "reporter" 
-✨ Success! Uploaded secret VEN_API_KEY
 ```
 
 For local development, define them in `.dev.vars` before running `wrangler dev`

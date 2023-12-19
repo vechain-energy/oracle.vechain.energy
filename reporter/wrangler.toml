@@ -1,5 +1,6 @@
 name = "reporter"
 main = "src/index.ts"
+node_compat = true
 compatibility_date = "2023-05-18"
 
 [durable_objects]
@@ -14,5 +15,4 @@ new_classes = ["ValueReporter"]
 
 [vars]
 # PRIVATE_KEY = "0x…"
-# VEN_API_KEY = "…"
 # API_KEY = "…"
