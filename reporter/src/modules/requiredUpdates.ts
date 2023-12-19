@@ -50,7 +50,7 @@ export async function isUpdateRequired(config: FeedConfig, feedContract: FeedCon
     // verify age
     const now = Math.floor(Date.now() / 1000)
     const age = now - Number(updatedAt)
-    process.env.NODE_ENV !== 'test' && console.log('age', age, 'heartbeat', config.heartbeat)
+    process.env.NODE_ENV !== 'test' && console.log(feedContract.address, 'age', age, 'heartbeat', config.heartbeat)
     if (age >= config.heartbeat) { return true }
 
 
@@ -58,7 +58,7 @@ export async function isUpdateRequired(config: FeedConfig, feedContract: FeedCon
     const diff = newValue - value
     const onePoint = value / 10000n
     const deviationPoints = onePoint > 0 ? Math.abs(Number(diff / onePoint)) : 0
-    process.env.NODE_ENV !== 'test' && console.log('deviation', deviationPoints, '/', config.deviationPoints)
+    process.env.NODE_ENV !== 'test' && console.log(feedContract.address, 'deviation', deviationPoints, '/', config.deviationPoints)
     if (deviationPoints >= config.deviationPoints) { return true }
 
 
