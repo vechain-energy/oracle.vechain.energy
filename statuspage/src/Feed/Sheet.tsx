@@ -67,7 +67,7 @@ export default function FeedSheet({ status }: { status: Status }) {
             </div>
 
 
-            <ul className="p-4 sm:p-0">
+            <ul className="p-4 sm:p-0 space-y-4">
                 {status.config.contracts.map(contract =>
                     <li key={contract.address}>
                         <ContractStatus status={status} contract={contract} />
