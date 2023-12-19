@@ -20,7 +20,8 @@ export default function ContractStatus({ status, contract }: { status: Status, c
         queryKey: [contract.address, status.id, contract.nodeUrl],
         queryFn: () => getLatestValue(status.id, contract),
         enabled: true,
-        keepPreviousData: true
+        keepPreviousData: true,
+        refetchOnMount: true
     })
 
     if (isLoading) {

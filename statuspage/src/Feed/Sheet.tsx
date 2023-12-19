@@ -42,7 +42,7 @@ export default function FeedSheet({ status }: { status: Status }) {
             <dl className="divide-y divide-gray-100">
                 <div className="px-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
 
-                    <dt className="font-thin leading-6 capitalize">Updating every</dt>
+                    <dt className="font-thin leading-6 capitalize">Refresh every</dt>
                     <dd className="mt-1 font-mono leading-6 sm:col-span-2 sm:mt-0 flex space-x-2 items-baseline sm:justify-end pb-4 sm:pb-0">
                         {formatDuration({ seconds: status.config.interval })}
                     </dd>
