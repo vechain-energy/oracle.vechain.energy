@@ -2,6 +2,7 @@ import React from "react";
 import { FEED_IDS } from "./constants";
 import FeedStatus from './Feed/Status'
 import { QueryClient, QueryClientProvider } from 'react-query';
+import Footer from './Footer'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -24,6 +25,8 @@ export default function App() {
             <FeedStatus feedId={feedId} />
           </div>
         )}
+
+        <Footer />
       </div>
     </QueryClientProvider>
   );
