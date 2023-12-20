@@ -276,7 +276,7 @@ curl -s http://localhost:8787/vet-usd | jq
 }
 ```
 
-## Decentralization
+## Notes about Decentralization
 
 You can set up multiple reporters from different entities to achieve decentralized data feeding.
 
@@ -295,4 +295,4 @@ flowchart LR
 ```
 
 * If a reporter can fetch data but can't publish it due to an empty wallet or technical issues, anyone can use the latest signed value and publish it to the feed.
-* The random selection of preferred reports is not linked to single feedIds. Reports must therefor supported all configured feeds.
+* The random selection of a preferred reporter is not linked to single feedIds. Reporters must therefor supported all configured feeds.
