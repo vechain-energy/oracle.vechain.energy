@@ -29,19 +29,6 @@ describe('fetchDataSources(config)', () => {
         })
     })
 
-    it('returns the average number for all data sources', async () => {
-        const config = getMockTask({
-            sources: [
-                { url: 'https://postman-echo.com/get?key=102', path: '.args.key' },
-                { url: 'https://postman-echo.com/get?key=108', path: '.args.key' }
-            ]
-        })
-
-        const result = await fetchDataSources(config)
-        expect(String(result.value)).toEqual(String(ethers.parseUnits(String((102 + 108) / 2), 12)))
-    })
-
-
     it('returns bigint with 12 decimal representation (parseUnits(value, 12) / uint128) in result.value', async () => {
         const config = getMockTask({
             sources: [{ url: 'https://postman-echo.com/get?key=102', path: '.test.key' }]
@@ -100,34 +87,35 @@ describe('fetchDataSources(config)', () => {
         ]))
     })
 
-    it('ignores sources that are have a 10% difference to the others', async () => {
+    it('extracts the median value for odd result lists', async () => {
         const config = getMockTask({
             sources: [
-                { url: 'https://postman-echo.com/get?key=101', path: '.args.key' },
-                { url: 'https://postman-echo.com/get?key=120', path: '.args.key' },
-                { url: 'https://postman-echo.com/get?key=102', path: '.args.key' }
+                { url: 'https://postman-echo.com/get?key=10', path: '.args.key' },
+                { url: 'https://postman-echo.com/get?key=50', path: '.args.key' },
+                { url: 'https://postman-echo.com/get?key=100', path: '.args.key' }
             ]
         })
 
         const result = await fetchDataSources(config)
-        expect(String(result.value)).toEqual(String(ethers.parseUnits(String((101 + 102) / 2), 12)))
+        expect(String(result.value)).toEqual(String(ethers.parseUnits(String((50)), 12)))
     })
 
 
-    it('returns outlier values in result.outliers', async () => {
+    it('extracts the the median value with average for even result lists', async () => {
         const config = getMockTask({
             sources: [
-                { url: 'https://postman-echo.com/get?key=101', path: '.args.key' },
-                { url: 'https://postman-echo.com/get?key=120', path: '.args.key' },
-                { url: 'https://postman-echo.com/get?key=102', path: '.args.key' }
+                { url: 'https://postman-echo.com/get?key=10', path: '.args.key' },
+                { url: 'https://postman-echo.com/get?key=50', path: '.args.key' },
+                { url: 'https://postman-echo.com/get?key=60', path: '.args.key' },
+                { url: 'https://postman-echo.com/get?key=100', path: '.args.key' }
             ]
         })
 
         const result = await fetchDataSources(config)
-        expect(result.outliers).toEqual([120])
+        expect(String(result.value)).toEqual(String(ethers.parseUnits(String((55)), 12)))
     })
 
-    it('returns values used to calculate the average in result.base', async () => {
+    it('returns all values for transparency in result.values', async () => {
         const config = getMockTask({
             sources: [
                 { url: 'https://postman-echo.com/get?key=101', path: '.args.key' },
@@ -137,7 +125,7 @@ describe('fetchDataSources(config)', () => {
         })
 
         const result = await fetchDataSources(config)
-        expect(result.base).toEqual([101, 102])
+        expect(result.values).toEqual([101, 102, 120])
     })
 
     describe('fetchDataSource(config.source)', () => {

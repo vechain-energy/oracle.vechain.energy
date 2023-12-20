@@ -46,8 +46,7 @@ export const DataSourceResultSchema = z.object({
     available: z.boolean(),
     value: z.number()
   })),
-  base: z.array(z.number()),
-  outliers: z.array(z.number()),
+  values: z.array(z.number()),
   errors: z.number()
 })
 

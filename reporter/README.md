@@ -78,8 +78,7 @@ wrangler secret put PRIVATE_KEY
 - All source URLs for a feed are loaded.
 - A numerical value is extracted from the field at the specified path.
 - Any errors are ignored.
-- Values that deviate more than 10% from the average of all sources are disregarded as outliers.
-- The average value of all remaining source values is the calculated value.
+- The [median value](https://en.wikipedia.org/wiki/Median#:~:text=The%20median%20of%20a%20finite,the%20middle%20one%20is%20selected.) is extracted
 
 
 ## How Data is Updated

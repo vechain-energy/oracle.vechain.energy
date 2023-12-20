@@ -1,21 +1,15 @@
 import type { FeedConfig, DataResult } from "../types";
 import { ethers, formatUnits } from 'ethers'
 
-// single values that have a huge difference to the average will be ignored
-const IGNORE_OUTLIER_PERCENTAGE = 0.1
-
-
-
 export default async function fetchDataSources(config: FeedConfig): Promise<DataResult> {
     const result: DataResult = {
         value: 0n,
         sources: [],
-        base: [],
-        outliers: [],
+        values: [],
         errors: 0
     }
 
-    const values = await Promise.all(
+    const dataSourceValues: (number | null)[] = await Promise.all(
         config.sources
             .map(source =>
                 fetchDataSource(source)
@@ -34,22 +28,19 @@ export default async function fetchDataSources(config: FeedConfig): Promise<Data
             )
     )
 
-    const validValues = values.filter(value => value !== null) as number[]
+    const sortedValues = dataSourceValues
+        .filter(value => value !== null)
+        .map(value => Number(value))
+        .sort((a, b) => a - b)
 
-    const averageWithOutliers = validValues.reduce((a, b) => a + b, 0) / validValues.length;
-    const filteredValues = validValues.filter(value => {
-        if (Math.abs(value - averageWithOutliers) / averageWithOutliers <= IGNORE_OUTLIER_PERCENTAGE) {
-            result.base.push(value)
-            return true
-        }
-        result.outliers.push(value)
-        return false
-    });
+    result.values.push(...sortedValues)
 
-    const averageWithoutOutliers = filteredValues.reduce((a, b) => a + b, 0) / filteredValues.length;
-    process.env.NODE_ENV !== 'test' && console.log('__fetched', averageWithoutOutliers, 'as average value')
+    const mid = Math.floor(result.values.length / 2);
+    const medianValue = result.values.length % 2 ? result.values[mid] : (result.values[mid - 1] + result.values[mid]) / 2;
 
-    result.value = ethers.parseUnits(String(averageWithoutOutliers.toFixed(12)), 12)
+    process.env.NODE_ENV !== 'test' && console.log('__fetched', medianValue, 'as median value')
+
+    result.value = ethers.parseUnits(String(medianValue.toFixed(12)), 12)
     return result
 }
 
