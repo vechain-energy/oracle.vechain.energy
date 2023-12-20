@@ -106,6 +106,7 @@ contract OracleUpgradeable is
         );
         (, uint128 oldTimestamp) = getLatestValue(feedId);
         require(newTimestamp > oldTimestamp, "Oracle: Data must be newer");
+        require(newTimestamp < (block.timestamp + 30 minutes), "Oracle: Data can not be in future");
         _updateValue(feedId, newValue, newTimestamp);
     }
 

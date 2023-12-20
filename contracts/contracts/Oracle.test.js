@@ -137,7 +137,7 @@ describe('Oracle', () => {
                 await expect(Number(result[1])).toEqual(Number(tokenData[2]))
             })
 
-            it('refuses invalidly signed input', async() => {
+            it('rejects invalidly signed input', async() => {
                 const { contracts, users } = await bootSystem()
                 const tokenData = [ethers.utils.formatBytes32String("test"), BigInt(1), BigInt(3)]
 
@@ -162,7 +162,7 @@ describe('Oracle', () => {
             })
 
 
-            it('refuses to accept older timestamps', async() => {
+            it('rejects timestamps in the past', async() => {
                 const { contracts, users } = await bootSystem()
 
                 const tokenData1 = [ethers.utils.formatBytes32String("test"), BigInt(1), BigInt(4)]
@@ -187,6 +187,34 @@ describe('Oracle', () => {
 
 
                 await expect(contracts[oracleContract].connect(users.anon).updateValueWithProof(data, '0x', testSigner.address)).rejects.toThrow('Data must be newer')
+            })
+
+            it('rejects timestamps 30m in the future', async() => {
+                const { contracts, users } = await bootSystem()
+
+                const tokenData1 = [ethers.utils.formatBytes32String("test"), BigInt(1), BigInt(3600)]
+                await contracts[oracleContract].connect(users.reporter).updateValue(...tokenData1)
+
+                const blockTimestamp = await ethers.provider.getBlock('latest').then(block => block.timestamp)
+                const tokenData2 = [ethers.utils.formatBytes32String("test"), BigInt(1), BigInt(blockTimestamp + 1800 + 30)]
+                const data = signCcipRequestWith({
+                    sender: testSigner.address,
+                    validUntil: Math.ceil(Date.now() / 1000) + 1800,
+                    callData: tokenData2[0],
+
+                    feedId: tokenData2[0],
+                    value: tokenData2[1],
+                    updatedAt: tokenData2[2]
+                }, testSigner.privateKey)
+
+                if (oracleContract === 'oracleV2') {
+                    await await contracts[oracleContract].connect(users.reporter).updateReporter(testSigner.address)
+                } else {
+                    await contracts[oracleContract].connect(users.owner).grantRole(await contracts[oracleContract].REPORTER_ROLE(), testSigner.address)
+                }
+
+
+                await expect(contracts[oracleContract].connect(users.anon).updateValueWithProof(data, '0x', testSigner.address)).rejects.toThrow('Data can not be in future')
             })
         })
 
