@@ -91,10 +91,10 @@ function getLatestValue(bytes32 id) public view returns (uint256 value, uint64 u
 
 ```shell
 # For TestNet
-PRIVATE_KEY="0x…" NETWORK=vechain yarn deploy:proxy OracleUpgradeable
+PRIVATE_KEY="0x…" NETWORK=vechain yarn deploy:proxy OracleUpgradable
 
 # For MainNet
-PRIVATE_KEY="0x…" NETWORK=main yarn deploy:proxy OracleUpgradeable
+PRIVATE_KEY="0x…" NETWORK=main yarn deploy:proxy OracleUpgradable
 ```
 
 After deployment, the ABI and Addresses are archived in the `outputs/` folder.
@@ -102,5 +102,5 @@ After deployment, the ABI and Addresses are archived in the `outputs/` folder.
 **Upgrades**
 
 ```shell
-PRIVATE_KEY="0x…" NETWORK=vechain yarn deploy:upgrade OracleUpgradeable
+PRIVATE_KEY="0x…" NETWORK=vechain yarn deploy:upgrade OracleUpgradable
 ```

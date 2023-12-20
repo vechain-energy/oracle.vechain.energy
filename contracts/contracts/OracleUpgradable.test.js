@@ -7,7 +7,7 @@ async function bootSystem() {
     const users = { owner, upgrader, anon, reporter, user1, user2, user3 }
 
     const contracts = {
-        oracleV1: await getContractWithProxy('OracleUpgradeable')
+        oracleV1: await getContractWithProxy('OracleUpgradable')
     }
 
     await grantUserRole(users.upgrader.address, 'UPGRADER_ROLE')

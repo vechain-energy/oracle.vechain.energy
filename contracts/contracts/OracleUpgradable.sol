@@ -8,10 +8,10 @@ import "./utils/SignatureVerifier.sol";
 import "hardhat/console.sol";
 
 /**
- * @title OracleUpgradeable
+ * @title OracleUpgradable
  * @dev This contract is used to manage and update oracle values
  */
-contract OracleUpgradeable is
+contract OracleUpgradable is
     Initializable,
     UUPSUpgradeable,
     AccessControlEnumerableUpgradeable

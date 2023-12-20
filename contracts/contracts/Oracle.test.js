@@ -8,7 +8,7 @@ async function bootSystem() {
 
     const OracleGasOptimized = await ethers.getContractFactory("OracleGasOptimized")
     const contracts = {
-        oracleV1: await getContractWithProxy('OracleUpgradeable'),
+        oracleV1: await getContractWithProxy('OracleUpgradable'),
         oracleV2: await OracleGasOptimized.deploy()
     }
 
