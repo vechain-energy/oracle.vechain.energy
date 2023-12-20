@@ -294,4 +294,4 @@ flowchart LR
 ```
 
 * If a reporter can fetch data but can't publish it due to an empty wallet or technical issues, anyone can use the latest signed value and publish it to the feed.
-* **TODO:** We need to define a way of communication to ensure that multiple reporters don't interfere with each other or waste gas fees on rapid updates.
+* The random selection of preferred reports is not linked to single feedIds. Reports must therefor supported all configured feeds.

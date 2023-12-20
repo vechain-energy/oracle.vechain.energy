@@ -212,6 +212,10 @@ components:
         interval:
           type: integer
           example: 60
+        timeout:
+          type: integer
+          example: 60
+          optional: true
         contracts:
           type: array
           items:

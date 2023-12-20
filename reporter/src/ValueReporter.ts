@@ -118,10 +118,31 @@ export class ValueReporter {
     console.log(config.id, 'last value:', report.value, 'updatedAt', report.updatedAt)
     console.log(config.id, 'calculation basics', data)
 
-    const requiredContractUpdates = await requiredUpdates(config, data.value)
+    const requiredContractUpdates = await requiredUpdates(config, data.value, this.env)
+    const identity = this.env?.PRIVATE_KEY ? new ethers.Wallet(this.env?.PRIVATE_KEY) : ethers.Wallet.createRandom()
+
     for (const contract of requiredContractUpdates) {
+      const timeoutStorageKey = ['timeout', contract.address].join(':')
+
+      // if there is a different reporter expected than the current one
+      if (contract?.preferedReporter && contract.preferedReporter !== identity.address) {
+        console.log(config.id, '**not preferred reporter for**', contract.address)
+
+        // if there is a timeout, remember that
+        if (config.timeout) {
+          const updateAfter = await this.storage.get<number>(timeoutStorageKey)
+          if (!updateAfter) {
+            await this.storage.put(timeoutStorageKey, (Date.now() + (config.timeout * 1000)))
+          }
+          else if (Date.now() < updateAfter) {
+            continue
+          }
+        }
+      }
+
       console.log(config.id, '**updating**', contract.address)
       const updatedDetails = await publishReport({ contract, report, env: this.env })
+      await this.storage.delete(timeoutStorageKey)
       console.log(config.id, updatedDetails)
     }
   }
@@ -168,7 +189,7 @@ export class ValueReporter {
       const latestValue = await this.storage.get<Report>('latestValue')
       const nextUpdate = await this.storage.getAlarm()
 
-      const unhealthyContracts = latestValue?.value ? await requiredUpdates(config, latestValue.value) : []
+      const unhealthyContracts = latestValue?.value ? await requiredUpdates(config, latestValue.value, this.env) : []
       const healthy = !latestValue?.value ? false : unhealthyContracts.length === 0
       const status = <Status>{
         id: config.id,

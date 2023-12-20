@@ -3,7 +3,8 @@ import { z } from 'zod'
 export const FeedContractSchema = z.object({
   nodeUrl: z.string(),
   address: z.string(),
-  delegationUrl: z.string().optional()
+  delegationUrl: z.string().optional(),
+  preferedReporter: z.string().optional()
 })
 
 export const FeedConfigSchema = z.object({
@@ -11,6 +12,7 @@ export const FeedConfigSchema = z.object({
   heartbeat: z.number(),
   deviationPoints: z.number(),
   interval: z.number(),
+  timeout: z.number().default(300).optional(),
   contracts: z.array(FeedContractSchema),
   sources: z.array(z.object({
     url: z.string(),

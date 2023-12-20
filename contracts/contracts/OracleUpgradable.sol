@@ -3,7 +3,7 @@ pragma solidity ^0.8.19;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/AccessControlEnumerableUpgradeable.sol";
 import "./utils/SignatureVerifier.sol";
 import "hardhat/console.sol";
 
@@ -14,10 +14,11 @@ import "hardhat/console.sol";
 contract OracleUpgradeable is
     Initializable,
     UUPSUpgradeable,
-    AccessControlUpgradeable
+    AccessControlEnumerableUpgradeable
 {
     bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
     bytes32 public constant REPORTER_ROLE = keccak256("REPORTER_ROLE");
+    uint256 private _selectedNextReporter;
 
     /**
      * @dev Struct to hold the feed value
@@ -30,7 +31,7 @@ contract OracleUpgradeable is
     /**
      * @dev The mapping of data feed ids to values
      */
-    mapping(bytes32 => Report) private feed;
+    mapping(bytes32 => Report) private _feed;
 
     /**
      * @dev Emitted when a value is changed.
@@ -48,7 +49,7 @@ contract OracleUpgradeable is
      * @dev Function to initialize the contract
      */
     function initialize() public initializer {
-        __AccessControl_init();
+        __AccessControlEnumerable_init();
         __UUPSUpgradeable_init();
 
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
@@ -68,6 +69,7 @@ contract OracleUpgradeable is
         uint128 newTimestamp
     ) public onlyRole(REPORTER_ROLE) {
         _updateValue(id, newValue, newTimestamp);
+        _selectRandomReporter();
     }
 
     /**
@@ -79,7 +81,7 @@ contract OracleUpgradeable is
     function getLatestValue(
         bytes32 id
     ) public view returns (uint128 value, uint128 updatedAt) {
-        return (feed[id].value, feed[id].updatedAt);
+        return (_feed[id].value, _feed[id].updatedAt);
     }
 
     /**
@@ -106,7 +108,10 @@ contract OracleUpgradeable is
         );
         (, uint128 oldTimestamp) = getLatestValue(feedId);
         require(newTimestamp > oldTimestamp, "Oracle: Data must be newer");
-        require(newTimestamp < (block.timestamp + 30 minutes), "Oracle: Data can not be in future");
+        require(
+            newTimestamp < (block.timestamp + 30 minutes),
+            "Oracle: Data can not be in future"
+        );
         _updateValue(feedId, newValue, newTimestamp);
     }
 
@@ -121,7 +126,7 @@ contract OracleUpgradeable is
         uint128 newValue,
         uint128 newTimestamp
     ) internal {
-        feed[id] = Report(newValue, newTimestamp);
+        _feed[id] = Report(newValue, newTimestamp);
         emit ValueUpdate(id, newValue, newTimestamp);
     }
 
@@ -132,6 +137,31 @@ contract OracleUpgradeable is
      */
     function isReporter(address user) public view returns (bool) {
         return hasRole(REPORTER_ROLE, user);
+    }
+
+    /**
+     * @dev Get the preferred reporter address for the next data update.
+     * @return reporter The address of the who should publish data next.
+     */
+    function getPreferredReporter() public view returns (address reporter) {
+        return getRoleMember(REPORTER_ROLE, _selectedNextReporter);
+    }
+
+    /**
+     * @dev Randomly select a reporter that is preferred for next reporting.
+     */
+    function _selectRandomReporter() internal {
+        uint reporterCount = getRoleMemberCount(REPORTER_ROLE);
+        uint256 newReporterIndex =
+            uint256(
+                keccak256(abi.encodePacked(block.timestamp, block.prevrandao))
+            ) %
+            reporterCount;
+        // Ensure the index is changed, if the new calculated index is the same as before, increment and ensure bounds are kept
+        if (newReporterIndex == _selectedNextReporter) {
+            newReporterIndex = (newReporterIndex + 1) % reporterCount;
+        }
+        _selectedNextReporter = newReporterIndex;
     }
 
     /**

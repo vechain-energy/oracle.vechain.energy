@@ -24,8 +24,17 @@ describe('requiredUpdates(config, value)', () => {
                 json: () => {
                     const value = 100
                     const timestamp = Math.floor(Date.now() / 1000) - (nodeUrl.includes('ShouldUpdate') ? (config.heartbeat * 2) : 0)
-                    const data = OracleV1.encodeFunctionResult('getLatestValue', [value, timestamp])
-                    return [{ data, reverted: false }]
+                    return [
+                        {
+                            data: OracleV1.encodeFunctionResult('getLatestValue', [value, timestamp]),
+                            reverted: false
+                        },
+                        {
+                            data: '0x',
+                            reverted: true
+
+                        }
+                    ]
                 }
             }
         })
@@ -43,7 +52,7 @@ describe('requiredUpdates(config, value)', () => {
                     const value = 100
                     const timestamp = Math.floor(Date.now() / 1000)
                     const data = OracleV1.encodeFunctionResult('getLatestValue', [value, timestamp])
-                    return [{ data, reverted: false }]
+                    return [{ data, reverted: false }, { data: '0x', reverted: true }]
                 }
             }
         })
@@ -64,11 +73,14 @@ describe('isUpdateRequired(config, value)', () => {
         jest.restoreAllMocks();
     });
 
-    it('requests last value correctly from blockchain', async () => {
+    it('requests last value & prefererd reporter from blockchain', async () => {
         const config = getMockTask()
 
         const mockResponse = {
-            json: jest.fn().mockResolvedValue({ data: '0x', reverted: false })
+            json: jest.fn().mockResolvedValue([
+                { data: OracleV1.encodeFunctionResult('getLatestValue', [100, 200]), reverted: false },
+                { data: OracleV1.encodeFunctionResult('getPreferredReporter', ['0x96c2E91381C3f3553Ec7f22e7F62ff8c0ff738de']), reverted: false },
+            ])
         }
         fetchMock.mockResolvedValue(mockResponse as any)
 
@@ -86,6 +98,10 @@ describe('isUpdateRequired(config, value)', () => {
                             ethers.encodeBytes32String(config.id),
                         ]),
                     },
+                    {
+                        to: config.contracts[0].address,
+                        data: OracleV1.encodeFunctionData("getPreferredReporter", []),
+                    },
                 ],
             })
         })
@@ -100,7 +116,7 @@ describe('isUpdateRequired(config, value)', () => {
         fetchMock.mockResolvedValue(mockResponse as any)
 
         const result = await isUpdateRequired(config, config.contracts[0], BigInt(0))
-        expect(result).toEqual(false)
+        expect(result.update).toEqual(false)
     })
 
     it('returns true if contract reverts due missing data', async () => {
@@ -115,7 +131,29 @@ describe('isUpdateRequired(config, value)', () => {
         fetchMock.mockResolvedValue(mockResponse as any)
 
         const result = await isUpdateRequired(config, config.contracts[0], BigInt(0))
-        expect(result).toEqual(true)
+        expect(result.update).toEqual(true)
+    })
+
+
+    it('returns preferredReporter', async () => {
+        const config = getMockTask()
+
+        const preferredReporter = '0x0000000000000000000000000000000000000123'
+        const mockResponse = {
+            json: jest.fn().mockResolvedValue([
+                {
+                    data: OracleV1.encodeFunctionResult('getLatestValue', [100, 200]),
+                    reverted: false
+                },
+                {
+                    data: OracleV1.encodeFunctionResult('getPreferredReporter', [preferredReporter]),
+                    reverted: false
+                }
+            ])
+        }
+        fetchMock.mockResolvedValue(mockResponse as any)
+        const result = await isUpdateRequired(config, config.contracts[0], BigInt(0))
+        expect(result.preferredReporter).toEqual(preferredReporter)
     })
 
 
@@ -129,12 +167,12 @@ describe('isUpdateRequired(config, value)', () => {
             const timestamp = Math.floor(Date.now() / 1000) - config.heartbeat
             const data = OracleV1.encodeFunctionResult('getLatestValue', [value, timestamp])
             const mockResponse = {
-                json: jest.fn().mockResolvedValue([{ data, reverted: false }])
+                json: jest.fn().mockResolvedValue([{ data, reverted: false }, { data: '0x', reverted: true }])
             }
             fetchMock.mockResolvedValue(mockResponse as any)
 
             const result = await isUpdateRequired(config, config.contracts[0], BigInt(0))
-            expect(result).toEqual(true)
+            expect(result.update).toEqual(true)
         })
 
         it('returns false if age < heartbeat interval', async () => {
@@ -146,12 +184,12 @@ describe('isUpdateRequired(config, value)', () => {
             const timestamp = Math.floor(Date.now() / 1000) - config.heartbeat + 1
             const data = OracleV1.encodeFunctionResult('getLatestValue', [value, timestamp])
             const mockResponse = {
-                json: jest.fn().mockResolvedValue([{ data, reverted: false }])
+                json: jest.fn().mockResolvedValue([{ data, reverted: false }, { data: '0x', reverted: true }])
             }
             fetchMock.mockResolvedValue(mockResponse as any)
 
             const result = await isUpdateRequired(config, config.contracts[0], BigInt(0))
-            expect(result).toEqual(false)
+            expect(result.update).toEqual(false)
         })
     })
 
@@ -166,12 +204,12 @@ describe('isUpdateRequired(config, value)', () => {
             const timestamp = Math.floor(Date.now() / 1000)
             const data = OracleV1.encodeFunctionResult('getLatestValue', [value, timestamp])
             const mockResponse = {
-                json: jest.fn().mockResolvedValue([{ data, reverted: false }])
+                json: jest.fn().mockResolvedValue([{ data, reverted: false }, { data: '0x', reverted: true }])
             }
             fetchMock.mockResolvedValue(mockResponse as any)
 
             const result = await isUpdateRequired(config, config.contracts[0], BigInt(newValue))
-            expect(result).toEqual(true)
+            expect(result.update).toEqual(true)
         })
 
         it('returns false if deviation < configured value', async () => {
@@ -184,12 +222,12 @@ describe('isUpdateRequired(config, value)', () => {
             const timestamp = Math.floor(Date.now() / 1000)
             const data = OracleV1.encodeFunctionResult('getLatestValue', [value, timestamp])
             const mockResponse = {
-                json: jest.fn().mockResolvedValue([{ data, reverted: false }])
+                json: jest.fn().mockResolvedValue([{ data, reverted: false }, { data: '0x', reverted: true }])
             }
             fetchMock.mockResolvedValue(mockResponse as any)
 
             const result = await isUpdateRequired(config, config.contracts[0], BigInt(newValue))
-            expect(result).toEqual(false)
+            expect(result.update).toEqual(false)
         })
     })
 })
