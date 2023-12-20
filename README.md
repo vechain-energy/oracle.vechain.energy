@@ -274,3 +274,24 @@ curl -s http://localhost:8787/vet-usd | jq
   }
 }
 ```
+
+## Decentralization
+
+You can set up multiple reporters from different entities to achieve decentralized data feeding.
+
+Here are the steps to set up:
+
+1. Deploy the `OracleUpgradable`
+2. Give each reporter's wallet `address` the `REPORTER_ROLE`
+   * Use `grantRole(REPORTER_ROLE, address)`
+3. Set up each reporter deployment with the same oracle address
+
+```mermaid
+flowchart LR
+    Reporter1[Reporter by Entity 1]--> |Publish Data| Contract
+    Reporter2[Reporter by Entity 2]--> |Publish Data| Contract
+    Reporter3[Reporter by Entity 3]--> |Publish Data| Contract
+```
+
+* If a reporter can fetch data but can't publish it due to an empty wallet or technical issues, anyone can use the latest signed value and publish it to the feed.
+* **TODO:** We need to define a way of communication to ensure that multiple reporters don't interfere with each other or waste gas fees on rapid updates.
