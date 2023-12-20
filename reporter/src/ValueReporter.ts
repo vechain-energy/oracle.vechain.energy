@@ -131,6 +131,7 @@ export class ValueReporter {
         // if there is a timeout, remember that
         if (config.timeout) {
           const updateAfter = await this.storage.get<number>(timeoutStorageKey)
+
           if (!updateAfter) {
             await this.storage.put(timeoutStorageKey, (Date.now() + (config.timeout * 1000)))
           }
@@ -142,8 +143,11 @@ export class ValueReporter {
 
       console.log(config.id, '**updating**', contract.address)
       const updatedDetails = await publishReport({ contract, report, env: this.env })
-      await this.storage.delete(timeoutStorageKey)
       console.log(config.id, updatedDetails)
+
+      if (config.timeout) {
+        await this.storage.delete(timeoutStorageKey)
+      }
     }
   }
 
