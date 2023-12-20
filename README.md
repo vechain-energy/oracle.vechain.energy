@@ -40,7 +40,7 @@ sequenceDiagram
        Oracle-Reporter-->>Oracle-Reporter: extract value
        end 
 
-       Oracle-Reporter->>Oracle-Reporter: calculate average value
+       Oracle-Reporter->>Oracle-Reporter: extract median value
 
        loop for each configured contract
          Oracle-Reporter->>Oracle-Contracts: request last value
@@ -202,7 +202,7 @@ vet-usd new configuration {
 }
 vet-usd updating values
 __fetched 0.0306102443635921 @ https://api.coincap.io/v2/assets/vechain .data.priceUsd
-__fetched 0.0306102443635921 as average value
+__fetched 0.0306102443635921 as median value
 vet-usd last value: 30610244364n updatedAt 1702558104
 age 1702558105 heartbeat 3600
 vet-usd **updating**
@@ -217,7 +217,7 @@ and every 60 seconds it will update the data:
 no config found in memory, loading from storage
 vet-usd updating values
 __fetched 0.030664445719926 @ https://api.coincap.io/v2/assets/vechain .data.priceUsd
-__fetched 0.030664445719926 as average value
+__fetched 0.030664445719926 as median value
 vet-usd last value: 30664445720n updatedAt 1702558166
 age 63 heartbeat 3600
 deviation 17 / 100
