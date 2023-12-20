@@ -29,6 +29,27 @@ describe('OracleV1', () => {
             await expect(contracts.oracleV1.connect(users.anon).upgradeTo(contracts.oracleV1.address)).rejects.toThrow(`is missing role ${role}`)
         })
     })
+
+    describe('Decentralization', () => {
+        it('highlights a preferred reporter for the next update', async() => {
+            const tokenDataBefore = [ethers.utils.formatBytes32String("test"), BigInt(1), BigInt(2)]
+
+            const { contracts, users } = await bootSystem()
+
+            const reporterRoleId = await contracts.oracleV1.REPORTER_ROLE()
+            await contracts.oracleV1.grantRole(reporterRoleId, users.user1.address)
+            await contracts.oracleV1.grantRole(reporterRoleId, users.user2.address)
+            await contracts.oracleV1.grantRole(reporterRoleId, users.user3.address)
+
+            await contracts.oracleV1.connect(users.reporter).updateValue(...tokenDataBefore)
+            const randomReporter1 = await contracts.oracleV1.getPreferredReporter()
+
+            await contracts.oracleV1.connect(users.reporter).updateValue(...tokenDataBefore)
+            const randomReporter2 = await contracts.oracleV1.getPreferredReporter()
+
+            expect(randomReporter1).not.toEqual(randomReporter2)
+        })
+    })
 })
 
 
