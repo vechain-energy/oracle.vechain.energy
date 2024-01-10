@@ -90,6 +90,8 @@ function updateValue(bytes32 id, uint256 newValue, uint64 newTimestamp)
 function getLatestValue(bytes32 id) public view returns (uint256 value, uint64 updatedAt)
 ```
 
+**Initial Deployment**
+
 ```shell
 # For TestNet
 PRIVATE_KEY="0x…" NETWORK=vechain yarn deploy:proxy OracleUpgradable
@@ -104,4 +106,33 @@ After deployment, the ABI and Addresses are archived in the `outputs/` folder.
 
 ```shell
 PRIVATE_KEY="0x…" NETWORK=vechain yarn deploy:upgrade OracleUpgradable
+```
+
+#### Oracle Aggregator
+
+This contract collects data from various Oracle-Contracts and provides the median from their latest data. Each contract must be added using `addSource`.
+
+The contract can be upgraded and controlled by the `ADMIN_ROLE` using the following functions:
+
+1. `addSource(address sourceAddress)` - Adds a new data source.
+2. `removeSource(address sourceAddress)` - Removes an existing data source.
+3. `isSource(address sourceAddress) returns (bool)` - Checks if a given address is a data source.
+4. `sources() returns (addresses[])` - Returns a list of all data sources.
+
+**Initial Deployment**
+
+```shell
+# For TestNet
+PRIVATE_KEY="0x…" NETWORK=vechain yarn deploy:proxy OracleAggregatorUpgradable
+
+# For MainNet
+PRIVATE_KEY="0x…" NETWORK=main yarn deploy:proxy OracleAggregatorUpgradable
+```
+
+After deployment, the ABI and Addresses are archived in the `outputs/` folder.
+
+**Upgrades**
+
+```shell
+PRIVATE_KEY="0x…" NETWORK=vechain yarn deploy:upgrade OracleAggregatorUpgradable
 ```
