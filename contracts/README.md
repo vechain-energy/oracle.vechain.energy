@@ -17,9 +17,11 @@ interface IVechainEnergyOracleV1 {
 }
 ```
 
-* `id` is a byte32 encoded version of the feed identifier (for example `vet-usd`)
-* `value` is the value provided by the oracle
-* `updatedAt` is the unix timestamp when the value was last determined
+- `id` is a byte32 encoded version of the feed identifier (for example `vet-usd`)
+- `value` is the value provided by the oracle
+- `updatedAt` is the unix timestamp when the value was last determined
+
+To support a decentralized approach, an aggregator contract `OracleAggregatorUpgradeable` can be deployed and load values from multiple configurable sources. The median value of all sources is calculated and return within the contract.
 
 ## Contract Details
 
@@ -62,8 +64,7 @@ PRIVATE_KEY="0x…" NETWORK=main yarn deploy OracleGasOptimized
 
 After deployment, the ABI and Addresses are archived in the `outputs/` folder.
 
-
-####  Oracle Upgradeable
+#### Oracle Upgradeable
 
 This contract is designed to be upgradable and uses roles for access control.
 

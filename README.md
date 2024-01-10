@@ -6,20 +6,19 @@ It includes smart contracts for storing data on-chain and a backend that updates
 
 ## Components
 
-* [**contracts/**](./contracts/) contains contracts to manage the on-chain-storage.
-   * It provides access to the latest known value
-   * And allows verified users to update the data
-* [**reporter/**](./reporter/) is a Cloudflare Worker that collects & reports new values to the on-chain-contracts
-   * Is configurable with a JSON-Object, to support different sources and multiple feeds
-   * Extracts a final value and stores it in a contract
-   * Provides a public API to access the latest value fetched from data sources, that has not been stored on-chain yet
-     * as pure information for processing
-     * and signed for verification in contracts
-* [**example-consumers/**](./example-consumers/) contains sample snippets accessing the feed data
-* [**statuspage/**](./statuspage/) contains html statuspage with a visualized health status
-  * Also deployed on [status.oracle.vechain.energy](https://status.oracle.vechain.energy/).
-* Publicly available feeds are listed on https://docs.vechain.energy/vechain.energy/Oracles
-
+- [**contracts/**](./contracts/) contains contracts to manage the on-chain-storage.
+  - It provides access to the latest known value
+  - And allows verified users to update the data
+- [**reporter/**](./reporter/) is a Cloudflare Worker that collects & reports new values to the on-chain-contracts
+  - Is configurable with a JSON-Object, to support different sources and multiple feeds
+  - Extracts a final value and stores it in a contract
+  - Provides a public API to access the latest value fetched from data sources, that has not been stored on-chain yet
+    - as pure information for processing
+    - and signed for verification in contracts
+- [**example-consumers/**](./example-consumers/) contains sample snippets accessing the feed data
+- [**statuspage/**](./statuspage/) contains html statuspage with a visualized health status
+  - Also deployed on [status.oracle.vechain.energy](https://status.oracle.vechain.energy/).
+- Publicly available feeds are listed on https://docs.vechain.energy/vechain.energy/Oracles
 
 ## Processing Sequences
 
@@ -39,7 +38,7 @@ sequenceDiagram
         Data-Sources-->>Oracle-Reporter: reply or fail
 
        Oracle-Reporter-->>Oracle-Reporter: extract value
-       end 
+       end
 
        Oracle-Reporter->>Oracle-Reporter: extract median value
 
@@ -55,7 +54,6 @@ sequenceDiagram
       end
     end
 ```
-
 
 ## Setting Up
 
@@ -76,7 +74,6 @@ First, deploy an Oracle-Contract from the [contracts](./contracts) directory.
 
 - Use the Reporter-API to access data.
 - Check out [Example Consumers](./example-consumers/) to learn different ways to use your data.
-
 
 ### Quick Start
 
@@ -128,8 +125,8 @@ echo "ORACLE_ADDRESS=$ORACLE_ADDRESS" >>  .env
 set -o allexport; source .env; set +o allexport
 ```
 
-
 Open second terminal to run the backend:
+
 ```shell
 cd reporter
 
@@ -148,7 +145,6 @@ Your worker has access to the following bindings:
 ⎔ Starting local server...
 [wrangler:inf] Ready on http://localhost:8787
 ```
-
 
 Continue in first terminal with environment variables:
 
@@ -178,7 +174,7 @@ curl -XPOST http://localhost:8787/vet-usd \
 ```
 
 ```json
-{"success":true,"id":"vet-usd"}
+{ "success": true, "id": "vet-usd" }
 ```
 
 Checking the backend terminal, you'll see the first update been broadcast:
@@ -278,13 +274,15 @@ curl -s http://localhost:8787/vet-usd | jq
 
 ## Notes about Decentralization
 
+### Multiple-Reporters for one Oracle
+
 You can set up multiple reporters from different entities to achieve decentralized data feeding.
 
 Here are the steps to set up:
 
 1. Deploy the `OracleUpgradable`
 2. Give each reporter's wallet `address` the `REPORTER_ROLE`
-   * Use `grantRole(REPORTER_ROLE, address)`
+   - Use `grantRole(REPORTER_ROLE, address)`
 3. Set up each reporter deployment with the same oracle address
 
 ```mermaid
@@ -294,5 +292,31 @@ flowchart LR
     Reporter3[Reporter by Entity 3]--> |Publish Data| Contract
 ```
 
-* If a reporter can fetch data but can't publish it due to an empty wallet or technical issues, anyone can use the latest signed value and publish it to the feed.
-* The random selection of a preferred reporter is not linked to single feedIds. Reporters must therefor supported all configured feeds.
+- If a reporter can fetch data but can't publish it due to an empty wallet or technical issues, anyone can use the latest signed value and publish it to the feed.
+- The random selection of a preferred reporter is not linked to single feedIds. Reporters must therefor supported all configured feeds.
+
+### Multiple Data Sources for an Aggregated Oracle
+
+For a more decentralized approach to data feeding, each participant can deploy their own contract and supply it with data from their own reporter. An aggregator contract can then pull data from each of these contracts and calculate the median value.
+
+Here are the steps to set up:
+
+1. Each participant deploys `OracleUpgradable` or `OracleGasOptimized`
+2. Each participant sets up a reporter deployment to feed data into their contracts
+3. Deploy `OracleAggregatorUpgradeable` and `addSource()` for each participant
+
+```mermaid
+flowchart LR
+    Client
+    Aggregator
+    Contract1[Contract 1]
+    Contract2[Contract 2]
+    Contract3[Contract 3]
+    
+    Client --> |Request Data| Aggregator
+    Aggregator -.-> |median| Client
+
+    Aggregator -.- |getLatestValue| Contract1
+    Aggregator -.- |getLatestValue| Contract2
+    Aggregator -.- |getLatestValue| Contract3
+```
