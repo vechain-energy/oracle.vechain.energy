@@ -152,7 +152,13 @@ contract OracleUpgradable is
     function _selectRandomReporter() internal {
         uint reporterCount = getRoleMemberCount(REPORTER_ROLE);
         uint256 newReporterIndex = uint256(
-            keccak256(abi.encodePacked(block.timestamp, block.prevrandao))
+            keccak256(
+                abi.encodePacked(
+                    block.timestamp,
+                    blockhash(block.number - 1),
+                    _selectedNextReporter
+                )
+            )
         ) % reporterCount;
         // Ensure the index is changed, if the new calculated index is the same as before, increment and ensure bounds are kept
         if (newReporterIndex == _selectedNextReporter) {
