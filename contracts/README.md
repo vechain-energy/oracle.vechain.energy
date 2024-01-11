@@ -21,7 +21,7 @@ interface IVechainEnergyOracleV1 {
 - `value` is the value provided by the oracle
 - `updatedAt` is the unix timestamp when the value was last determined
 
-To support a decentralized approach, an aggregator contract `OracleAggregatorUpgradeable` can be deployed and load values from multiple configurable sources. The median value of all sources is calculated and return within the contract.
+To support a decentralized approach, an aggregator contract `OracleAggregatorUpgradeable` can be deployed and load values from multiple configurable sources. The median value of all sources is calculated and returned by the contract.
 
 ## Contract Details
 
@@ -48,9 +48,9 @@ yarn install
 yarn test
 ```
 
-### Deployment Instructions
+## Deployment Instructions
 
-#### Oracle Gas Optimized
+### Oracle Gas Optimized
 
 This contract is gas optimized and can only have one reporter.
 
@@ -64,7 +64,7 @@ PRIVATE_KEY="0x…" NETWORK=main yarn deploy OracleGasOptimized
 
 After deployment, the ABI and Addresses are archived in the `outputs/` folder.
 
-#### Oracle Upgradeable
+### Oracle Upgradeable
 
 This contract is designed to be upgradable and uses roles for access control.
 
@@ -108,7 +108,7 @@ After deployment, the ABI and Addresses are archived in the `outputs/` folder.
 PRIVATE_KEY="0x…" NETWORK=vechain yarn deploy:upgrade OracleUpgradable
 ```
 
-#### Oracle Aggregator
+### Oracle Aggregator
 
 This contract collects data from various Oracle-Contracts and provides the median from their latest data. Each contract must be added using `addSource`.
 
@@ -118,6 +118,13 @@ The contract can be upgraded and controlled by the `ADMIN_ROLE` using the follow
 2. `removeSource(address sourceAddress)` - Removes an existing data source.
 3. `isSource(address sourceAddress) returns (bool)` - Checks if a given address is a data source.
 4. `sources() returns (addresses[])` - Returns a list of all data sources.
+5. `setIgnoreUpdatesOlderThan(seconds)` - Sets a maximum age for data sources.
+6. `ignoreUpdatesOlderThan` - All reports must be updated within the time frame defined by this variable.
+
+**Automatically Filter Inactive Sources**
+
+- If `setIgnoreUpdatesOlderThan(seconds)` is not set or `0`, all values will be aggregated.
+- If set, reports older than `seconds` will be ignored.
 
 **Initial Deployment**
 

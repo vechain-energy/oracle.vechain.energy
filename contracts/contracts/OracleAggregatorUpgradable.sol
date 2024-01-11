@@ -19,6 +19,7 @@ contract OracleAggregatorUpgradable is
 {
     bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
+    uint128 public ignoreUpdatesOlderThan;
 
     /**
      * @dev Struct to hold the feed value
@@ -84,6 +85,12 @@ contract OracleAggregatorUpgradable is
         oracleSources = _sources.values();
     }
 
+    function setIgnoreUpdatesOlderThan(
+        uint128 _ignoreUpdatesOlderThan
+    ) public onlyRole(ADMIN_ROLE) {
+        ignoreUpdatesOlderThan = _ignoreUpdatesOlderThan;
+    }
+
     /**
      * @dev Function to get the median value for a given id.
      * @param id The id to retrieve the value for
@@ -92,38 +99,88 @@ contract OracleAggregatorUpgradable is
     function getLatestValue(
         bytes32 id
     ) public view returns (uint128 value, uint128 updatedAt) {
-        Report memory median = medianPrice(id, _sources.values());
+        Report[] memory reports = loadReportsFromSources(id);
+        Report memory median = medianValue(reports);
         return (median.value, median.updatedAt);
     }
 
-    /**
-     * @notice Calculates the median price over any set of sources. Has been adopted from https://github.com/compound-finance/open-oracle/blob/e7a928334e5e454a88eec38e4ee1be5ee3b13f08/contracts/DelFiPrice.sol#L86-L106
-     * @param id The id to calculate the median price of
-     * @param sources_ The sources to use when calculating the median price
-     * @return median The median price over the set of sources
-     */
-    function medianPrice(
-        bytes32 id,
-        address[] memory sources_
-    ) public view returns (Report memory median) {
-        require(sources_.length > 0, "sources list must not be empty");
 
-        uint N = sources_.length;
-        Report[] memory postedPrices = new Report[](N);
-        for (uint i = 0; i < N; i++) {
+
+    /**
+     * @dev This function loads reports from all sources for a given id. It filters out reports that are older than the specified ignoreUpdatesOlderThan value.
+     * It then resizes the reports array to only include valid reports and returns it.
+     * @param id The id for which to load the reports
+     * @return reports An array of valid reports from all sources
+     */
+    function loadReportsFromSources(
+        bytes32 id
+    ) private view returns (Report[] memory) {
+        address[] memory sources_ = sources();
+
+        uint sourceCount = sources_.length;
+        Report[] memory reports = new Report[](sourceCount);
+
+        uint validReportCount = 0;
+        uint requiredUpdatedAfter = ignoreUpdatesOlderThan > 0
+            ? block.timestamp - ignoreUpdatesOlderThan
+            : ignoreUpdatesOlderThan;
+
+        for (uint sourceIndex = 0; sourceIndex < sourceCount; sourceIndex++) {
             (
-                postedPrices[i].value,
-                postedPrices[i].updatedAt
-            ) = IVechainEnergyOracleV1(sources_[i]).getLatestValue(id);
+                uint128 sourceValue,
+                uint128 sourceUpdatedAt
+            ) = IVechainEnergyOracleV1(sources_[sourceIndex]).getLatestValue(
+                    id
+                );
+
+            if (sourceUpdatedAt >= requiredUpdatedAfter) {
+                reports[validReportCount] = Report(
+                    sourceValue,
+                    sourceUpdatedAt
+                );
+                validReportCount++;
+            }
         }
 
-        Report[] memory sortedPrices = sort(postedPrices);
+        return resizeList(reports, validReportCount);
+    }
 
-        // if N is even, get the left and right medians and average them
+    /**
+     * @notice Resizes a list of reports to a new length.
+     * @param reports The list to resize.
+     * @return resizedReports The resized list of reports.
+     */
+    function resizeList(
+        Report[] memory reports,
+        uint newSize
+    ) private pure returns (Report[] memory resizedReports) {
+        if (newSize == reports.length) {
+            resizedReports = reports;
+        } else {
+            resizedReports = new Report[](newSize);
+            for (uint i = 0; i < newSize; i++) {
+                resizedReports[i] = reports[i];
+            }
+        }
+    }
+
+    /**
+     * @notice Calculates the median value over any set of reports. Has been adopted from https://github.com/compound-finance/open-oracle/blob/e7a928334e5e454a88eec38e4ee1be5ee3b13f08/contracts/DelFiPrice.sol#L86-L106
+     * @param reports The sources to use when calculating the median value
+     * @return median The median value over the set of reports
+     */
+    function medianValue(
+        Report[] memory reports
+    ) private pure returns (Report memory median) {
+        require(reports.length > 0, "sources list must not be empty");
+
+        Report[] memory sortedReports = sort(reports);
+
+        // if length of values is even, get the left and right medians and average them
         // return the newest timestamp of the both
-        if (N % 2 == 0) {
-            Report memory left = sortedPrices[(N / 2) - 1];
-            Report memory right = sortedPrices[N / 2];
+        if (sortedReports.length % 2 == 0) {
+            Report memory left = sortedReports[(sortedReports.length / 2) - 1];
+            Report memory right = sortedReports[sortedReports.length / 2];
 
             uint128 sum = left.value + right.value;
             uint128 updatedAt = left.updatedAt > right.updatedAt
@@ -132,7 +189,7 @@ contract OracleAggregatorUpgradable is
             return Report(uint128(sum / 2), updatedAt);
         } else {
             // if N is odd, just return the median
-            return sortedPrices[N / 2];
+            return sortedReports[sortedReports.length / 2];
         }
     }
 

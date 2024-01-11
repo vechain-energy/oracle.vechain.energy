@@ -105,6 +105,23 @@ describe('Aggregator', () => {
         })
     })
 
+    describe('setIgnoreUpdatesOlderThan(seconds)', () => {
+        it('rejects non-admin calls', async () => {
+            const { contracts, users } = await bootSystem()
+            await expect(contracts.aggregator.connect(users.anon).setIgnoreUpdatesOlderThan(0)).rejects.toThrow()
+        })
+
+        it('sets the ignoreUpdatesOlderThan correctly', async () => {
+            const { contracts, users } = await bootSystem()
+
+            const ignoreUpdatesOlderThan = 555
+            await contracts.aggregator.connect(users.admin).setIgnoreUpdatesOlderThan(ignoreUpdatesOlderThan)
+            const result = await contracts.aggregator.ignoreUpdatesOlderThan()
+
+            await expect(Number(result)).toEqual(Number(ignoreUpdatesOlderThan))
+        })
+    })
+
     describe('getLatestValue(id)', () => {
         it('returns (value, updatedAt)', async () => {
             const tokenData = [ethers.utils.formatBytes32String("test"), BigInt(1), BigInt(3)]
@@ -175,6 +192,76 @@ describe('Aggregator', () => {
             const result = await contracts.aggregator.getLatestValue(id)
             await expect(Number(result[0])).toEqual(Number(tokenData2[1]))
             await expect(Number(result[1])).toEqual(Number(tokenData2[2]))
+        })
+
+        it('ignores sources with an updatedAt older than ignoreUpdatesOlderThan', async () => {
+            const id = ethers.utils.formatBytes32String("test")
+            const ignoreUpdatesOlderThan = 86400
+            const now = Math.floor(Date.now() / 1000)
+            const tokenData1 = [id, BigInt(2), now]
+            const tokenData2 = [id, BigInt(4), now - ignoreUpdatesOlderThan - 1]
+
+            const { contracts, users } = await bootSystem()
+
+            await contracts.oracleV1.connect(users.reporter).updateValue(...tokenData1)
+            await contracts.aggregator.addSource(contracts.oracleV1.address)
+
+            await contracts.oracleV2.connect(users.reporter).updateValue(...tokenData2)
+            await contracts.aggregator.addSource(contracts.oracleV2.address)
+
+            await contracts.aggregator.connect(users.admin).setIgnoreUpdatesOlderThan(ignoreUpdatesOlderThan)
+
+            const result = await contracts.aggregator.getLatestValue(id)
+            await expect(Number(result[0])).toEqual(Number(tokenData1[1]))
+        })
+
+        it('accepts sources with an updatedAt >= ignoreUpdatesOlderThan', async () => {
+            const id = ethers.utils.formatBytes32String("test")
+            const ignoreUpdatesOlderThan = 86400
+
+            const now = Math.floor(Date.now() / 1000)
+            const tokenData1 = [id, BigInt(2), now + 3000]
+            const tokenData2 = [id, BigInt(4), now - ignoreUpdatesOlderThan + 3000]
+
+            const { contracts, users } = await bootSystem()
+
+            await ethers.provider.send("evm_setNextBlockTimestamp", [now + 1000])
+            await contracts.oracleV1.connect(users.reporter).updateValue(...tokenData1)
+            await contracts.aggregator.addSource(contracts.oracleV1.address)
+
+
+            await ethers.provider.send("evm_setNextBlockTimestamp", [now + 2000])
+            await contracts.oracleV2.connect(users.reporter).updateValue(...tokenData2)
+            await contracts.aggregator.addSource(contracts.oracleV2.address)
+
+
+            await ethers.provider.send("evm_setNextBlockTimestamp", [now + 3000])
+            await contracts.aggregator.connect(users.admin).setIgnoreUpdatesOlderThan(ignoreUpdatesOlderThan)
+
+            const result = await contracts.aggregator.getLatestValue(id)
+            await expect(Number(result[0])).toEqual(Number(tokenData1[1] + tokenData2[1]) / 2)
+        })
+
+        it('include all sources if ignoreUpdatesOlderThan is 0', async () => {
+            const id = ethers.utils.formatBytes32String("test")
+            const ignoreUpdatesOlderThan = 86400
+            const now = Math.floor(Date.now() / 1000)
+            const tokenData1 = [id, BigInt(2), now]
+            const tokenData2 = [id, BigInt(4), now - ignoreUpdatesOlderThan - 1]
+
+            const { contracts, users } = await bootSystem()
+
+            await contracts.oracleV1.connect(users.reporter).updateValue(...tokenData1)
+            await contracts.aggregator.addSource(contracts.oracleV1.address)
+
+            await contracts.oracleV2.connect(users.reporter).updateValue(...tokenData2)
+            await contracts.aggregator.addSource(contracts.oracleV2.address)
+
+            await contracts.aggregator.connect(users.admin).setIgnoreUpdatesOlderThan(ignoreUpdatesOlderThan)
+            await contracts.aggregator.connect(users.admin).setIgnoreUpdatesOlderThan(0)
+
+            const result = await contracts.aggregator.getLatestValue(id)
+            await expect(Number(result[0])).toEqual(Number(tokenData1[1] + tokenData2[1]) / 2)
         })
     })
 })
