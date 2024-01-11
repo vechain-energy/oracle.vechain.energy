@@ -17,9 +17,11 @@ interface IVechainEnergyOracleV1 {
 }
 ```
 
-* `id` is a byte32 encoded version of the feed identifier (for example `vet-usd`)
-* `value` is the value provided by the oracle
-* `updatedAt` is the unix timestamp when the value was last determined
+- `id` is a byte32 encoded version of the feed identifier (for example `vet-usd`)
+- `value` is the value provided by the oracle
+- `updatedAt` is the unix timestamp when the value was last determined
+
+To support a decentralized approach, an aggregator contract `OracleAggregatorUpgradeable` can be deployed and load values from multiple configurable sources. The median value of all sources is calculated and returned by the contract.
 
 ## Contract Details
 
@@ -46,9 +48,9 @@ yarn install
 yarn test
 ```
 
-### Deployment Instructions
+## Deployment Instructions
 
-#### Oracle Gas Optimized
+### Oracle Gas Optimized
 
 This contract is gas optimized and can only have one reporter.
 
@@ -62,8 +64,7 @@ PRIVATE_KEY="0x…" NETWORK=main yarn deploy OracleGasOptimized
 
 After deployment, the ABI and Addresses are archived in the `outputs/` folder.
 
-
-####  Oracle Upgradeable
+### Oracle Upgradeable
 
 This contract is designed to be upgradable and uses roles for access control.
 
@@ -89,6 +90,8 @@ function updateValue(bytes32 id, uint256 newValue, uint64 newTimestamp)
 function getLatestValue(bytes32 id) public view returns (uint256 value, uint64 updatedAt)
 ```
 
+**Initial Deployment**
+
 ```shell
 # For TestNet
 PRIVATE_KEY="0x…" NETWORK=vechain yarn deploy:proxy OracleUpgradable
@@ -103,4 +106,40 @@ After deployment, the ABI and Addresses are archived in the `outputs/` folder.
 
 ```shell
 PRIVATE_KEY="0x…" NETWORK=vechain yarn deploy:upgrade OracleUpgradable
+```
+
+### Oracle Aggregator
+
+This contract collects data from various Oracle-Contracts and provides the median from their latest data. Each contract must be added using `addSource`.
+
+The contract can be upgraded and controlled by the `ADMIN_ROLE` using the following functions:
+
+1. `addSource(address sourceAddress)` - Adds a new data source.
+2. `removeSource(address sourceAddress)` - Removes an existing data source.
+3. `isSource(address sourceAddress) returns (bool)` - Checks if a given address is a data source.
+4. `sources() returns (addresses[])` - Returns a list of all data sources.
+5. `setIgnoreUpdatesOlderThan(seconds)` - Sets a maximum age for data sources.
+6. `ignoreUpdatesOlderThan` - All reports must be updated within the time frame defined by this variable.
+
+**Automatically Filter Inactive Sources**
+
+- If `setIgnoreUpdatesOlderThan(seconds)` is not set or `0`, all values will be aggregated.
+- If set, reports older than `seconds` will be ignored.
+
+**Initial Deployment**
+
+```shell
+# For TestNet
+PRIVATE_KEY="0x…" NETWORK=vechain yarn deploy:proxy OracleAggregatorUpgradable
+
+# For MainNet
+PRIVATE_KEY="0x…" NETWORK=main yarn deploy:proxy OracleAggregatorUpgradable
+```
+
+After deployment, the ABI and Addresses are archived in the `outputs/` folder.
+
+**Upgrades**
+
+```shell
+PRIVATE_KEY="0x…" NETWORK=vechain yarn deploy:upgrade OracleAggregatorUpgradable
 ```
