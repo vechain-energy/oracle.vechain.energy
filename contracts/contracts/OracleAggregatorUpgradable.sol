@@ -86,7 +86,8 @@ contract OracleAggregatorUpgradable is
     }
 
     /**
-     * @dev Function to set a minimum freshness for data values, relative to the current time. A value of 0 disables the filter. Restricted to ADMIN_ROLE.
+     * @dev Function to set a minimum freshness for data values, relative to the current time. Restricted to ADMIN_ROLE.
+     * @param _ignoreUpdatesOlderThan The required freshness in seconds for values, relative to block.timestamp. A value of 0 disables the filter. 
      */
     function setIgnoreUpdatesOlderThan(
         uint128 _ignoreUpdatesOlderThan
