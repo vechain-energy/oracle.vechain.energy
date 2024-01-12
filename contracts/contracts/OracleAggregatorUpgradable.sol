@@ -9,8 +9,8 @@ import "./utils/SignatureVerifier.sol";
 import "./IVechainEnergyOracleV1.sol";
 
 /**
- * @title OracleUpgradable
- * @dev This contract is used to manage and update oracle values
+ * @title OracleAggregatorUpgradable
+ * @dev This contract is used to aggregate values from multiple sources and return a median value.
  */
 contract OracleAggregatorUpgradable is
     Initializable,
@@ -85,6 +85,9 @@ contract OracleAggregatorUpgradable is
         oracleSources = _sources.values();
     }
 
+    /**
+     * @dev Function to set a minimum freshness for data values, relative to the current time. A value of 0 disables the filter. Restricted to ADMIN_ROLE.
+     */
     function setIgnoreUpdatesOlderThan(
         uint128 _ignoreUpdatesOlderThan
     ) public onlyRole(ADMIN_ROLE) {
